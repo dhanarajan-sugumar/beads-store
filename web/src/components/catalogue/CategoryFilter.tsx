@@ -27,8 +27,11 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   ];
 
   return (
-    <nav aria-label="Product categories" className="w-full mb-6">
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar sm:flex-wrap">
+    <nav
+      aria-label="Product categories"
+      className="sticky top-16 z-20 bg-ivory/95 backdrop-blur-md py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-gold-200/50 mb-4 transition-all"
+    >
+      <div className="flex items-center gap-2 overflow-x-auto pb-0.5 no-scrollbar sm:flex-wrap">
         {categories.map((cat) => {
           const isSelected = selectedCategory === cat.id;
           return (
@@ -37,18 +40,18 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
               type="button"
               onClick={() => onSelectCategory(cat.id)}
               aria-pressed={isSelected}
-              className={`min-h-[44px] px-4 py-2 rounded-full text-sm font-medium transition-all duration-150 whitespace-nowrap flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 ${
+              className={`min-h-[44px] px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-150 whitespace-nowrap flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 ${
                 isSelected
                   ? 'bg-primary-600 text-white shadow-xs'
-                  : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                  : 'bg-white text-stone-700 border border-gold-200/70 hover:bg-gold-50/50 hover:border-gold-300'
               }`}
             >
               <span>{cat.label}</span>
               <span
-                className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                className={`text-[11px] px-1.5 py-0.2 rounded-full font-semibold ${
                   isSelected
-                    ? 'bg-primary-700/80 text-white'
-                    : 'bg-gray-100 text-gray-600'
+                    ? 'bg-primary-700/90 text-white'
+                    : 'bg-gold-100 text-gold-800'
                 }`}
               >
                 {cat.count}

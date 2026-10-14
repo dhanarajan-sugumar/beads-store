@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Plus, ImageOff, Maximize2 } from 'lucide-react';
+import { X, Plus, Minus, ImageOff, Maximize2, ShoppingBag } from 'lucide-react';
 import type { Product } from '@/types/database';
 import { formatInrPrice } from '@/utils/formatters';
+import { useCart } from '@/hooks/useCart';
+import { useToast } from '@/hooks/useToast';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -17,6 +19,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [imageError, setImageError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const { items, addItem, updateQuantity, removeItem, openCart } = useCart();
+  const { showToast } = useToast();
+
+  const cartItem = items.find((item) => item.id === product?.id);
+  const quantityInCart = cartItem ? cartItem.quantity : 0;
 
   useEffect(() => {
     setImageError(false);
@@ -53,11 +60,23 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   if (!product) return null;
 
+  const handleAddToCart = () => {
+    if (onAddToCart) {
+      onAddToCart(product);
+    } else {
+      addItem(product);
+    }
+    showToast(`${product.name} added to your bag`, {
+      label: 'View Bag',
+      onClick: openCart,
+    });
+  };
+
   return (
     <>
       {/* Product Detail Modal */}
       <div
-        className={`fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 ${
+        className={`fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 ${
           isFullscreen ? 'invisible pointer-events-none' : ''
         }`}
         role="dialog"
@@ -66,7 +85,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         onClick={onClose}
       >
         <div
-          className="relative bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-gray-100 flex flex-col max-h-[90vh]"
+          className="relative bg-white rounded-2xl max-w-lg sm:max-w-xl w-full overflow-hidden shadow-2xl border border-gold-200/70 flex flex-col max-h-[90vh]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close button with >= 44px touch target */}
@@ -75,7 +94,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Close product details"
-            className="absolute top-3 right-3 z-10 min-w-[44px] min-h-[44px] p-2 rounded-full bg-white/90 text-gray-700 hover:text-gray-900 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 shadow-sm flex items-center justify-center transition-colors"
+            className="absolute top-3 right-3 z-10 min-w-[44px] min-h-[44px] p-2 rounded-full bg-white/90 text-stone-700 hover:text-stone-900 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 shadow-sm flex items-center justify-center transition-colors"
           >
             <X className="w-5 h-5" aria-hidden="true" />
           </button>
@@ -83,7 +102,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           {/* Modal scrollable body */}
           <div className="overflow-y-auto flex-1">
             {/* Image - full uncropped view with object-contain */}
-            <div className="relative w-full max-h-[58vh] min-h-[260px] bg-stone-50 flex items-center justify-center p-3 sm:p-4 border-b border-gray-100 group">
+            <div className="relative w-full max-h-[58vh] min-h-[260px] bg-stone-50 flex items-center justify-center p-3 sm:p-4 border-b border-gold-100 group">
               {product.image_url && !imageError ? (
                 <>
                   <img
@@ -100,14 +119,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     type="button"
                     onClick={() => setIsFullscreen(true)}
                     aria-label="View photo in full screen"
-                    className="absolute bottom-3 right-3 min-h-[36px] px-3 py-1.5 rounded-full bg-white/90 hover:bg-white text-gray-800 text-xs font-semibold shadow-md flex items-center gap-1.5 backdrop-blur-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                    className="absolute bottom-3 right-3 min-h-[36px] px-3 py-1.5 rounded-full bg-white/90 hover:bg-white text-stone-800 text-xs font-semibold shadow-md flex items-center gap-1.5 backdrop-blur-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
                   >
-                    <Maximize2 className="w-3.5 h-3.5 text-gray-700" aria-hidden="true" />
+                    <Maximize2 className="w-3.5 h-3.5 text-stone-700" aria-hidden="true" />
                     <span>Fullscreen</span>
                   </button>
                 </>
               ) : (
-                <div className="w-full h-48 flex flex-col items-center justify-center bg-gray-50 text-gray-400 p-6">
+                <div className="w-full h-48 flex flex-col items-center justify-center bg-stone-50 text-stone-400 p-6">
                   <ImageOff className="w-12 h-12 mb-2" aria-hidden="true" />
                   <span className="text-sm">No image available</span>
                 </div>
@@ -115,15 +134,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             </div>
 
             {/* Details */}
-            <div className="p-5 sm:p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-3.5 sm:space-y-4">
               <div className="flex flex-wrap items-center gap-2">
                 {product.sku && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-50 text-primary-800 border border-primary-200 font-mono">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-medium text-stone-600 bg-stone-100 border border-stone-200">
                     SKU: {product.sku}
                   </span>
                 )}
                 {product.category && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 capitalize">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gold-50 text-gold-800 border border-gold-200/70 capitalize">
                     {product.category}
                   </span>
                 )}
@@ -132,7 +151,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               <div className="flex items-start justify-between gap-4">
                 <h2
                   id="product-modal-title"
-                  className="text-xl sm:text-2xl font-serif font-bold text-gray-900 leading-snug"
+                  className="text-xl sm:text-2xl font-serif font-bold text-stone-900 leading-snug"
                 >
                   {product.name}
                 </h2>
@@ -143,8 +162,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </div>
 
               {product.description && (
-                <div className="prose prose-sm text-gray-600 border-t border-gray-100 pt-3">
-                  <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                <div className="prose prose-sm text-stone-600 border-t border-gold-100 pt-3">
+                  <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1">
                     Description
                   </h3>
                   <p className="whitespace-pre-line leading-relaxed">
@@ -156,26 +175,65 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           </div>
 
           {/* Modal footer actions */}
-          <div className="p-4 sm:p-5 border-t border-gray-100 bg-gray-50/80 flex items-center justify-end gap-3">
+          <div className="p-3.5 sm:p-4 border-t border-gold-100 bg-stone-50/80 flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="min-h-[44px] px-4 py-2.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 transition-colors"
+              className="min-h-[44px] px-4 py-2.5 rounded-xl border border-stone-300 text-sm font-medium text-stone-700 hover:bg-stone-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 transition-colors"
             >
               Close
             </button>
-            {onAddToCart && (
+
+            {quantityInCart === 0 ? (
               <button
                 type="button"
-                onClick={() => {
-                  onAddToCart(product);
-                  onClose();
-                }}
-                className="min-h-[44px] px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 shadow-sm flex items-center gap-2 transition-colors"
+                onClick={handleAddToCart}
+                className="min-h-[44px] px-5 py-2.5 rounded-xl bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 shadow-sm flex items-center gap-2 transition-colors"
               >
                 <Plus className="w-4 h-4" aria-hidden="true" />
-                Add to Cart
+                Add to Bag
               </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="inline-flex items-center rounded-xl border border-primary-300 bg-primary-50/80 shadow-2xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (quantityInCart <= 1) {
+                        removeItem(product.id);
+                      } else {
+                        updateQuantity(product.id, quantityInCart - 1);
+                      }
+                    }}
+                    aria-label={`Decrease quantity of ${product.name}`}
+                    className="min-w-[40px] min-h-[44px] flex items-center justify-center text-primary-800 hover:bg-primary-200/50 rounded-l-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                  >
+                    <Minus className="w-3.5 h-3.5" aria-hidden="true" />
+                  </button>
+                  <span className="px-2.5 font-serif font-bold text-xs sm:text-sm text-primary-900 min-w-[24px] text-center">
+                    {quantityInCart} in bag
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => updateQuantity(product.id, quantityInCart + 1)}
+                    aria-label={`Increase quantity of ${product.name}`}
+                    className="min-w-[40px] min-h-[44px] flex items-center justify-center text-primary-800 hover:bg-primary-200/50 rounded-r-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                  >
+                    <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    openCart();
+                  }}
+                  className="min-h-[44px] px-3.5 py-2.5 rounded-xl bg-primary-600 text-white text-xs sm:text-sm font-semibold hover:bg-primary-700 transition-colors flex items-center gap-1.5 shadow-2xs"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span className="hidden xs:inline">View Bag</span>
+                </button>
+              </div>
             )}
           </div>
         </div>
