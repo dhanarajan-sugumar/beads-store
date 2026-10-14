@@ -7,19 +7,19 @@ interface EmptyStateProps {
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
-  title = 'No products found',
-  description = 'Our artisans are crafting new pieces. Please check back soon!',
+  title = 'No pieces found',
+  description = 'Our artisans are crafting new designs. Please check back soon.',
 }) => {
   return (
     <div
       role="status"
-      className="flex flex-col items-center justify-center p-8 sm:p-12 text-center bg-white rounded-2xl border border-gray-100 shadow-sm max-w-lg mx-auto"
+      className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-md mx-auto"
     >
-      <div className="w-16 h-16 rounded-full bg-primary-50 flex items-center justify-center mb-4 text-primary-600">
-        <PackageOpen className="w-8 h-8" aria-hidden="true" />
+      <div className="w-12 h-12 rounded-full border border-gold/40 flex items-center justify-center mb-4 text-gold">
+        <PackageOpen className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
       </div>
-      <h3 className="text-xl font-serif font-bold text-gray-900">{title}</h3>
-      <p className="text-sm text-gray-500 mt-2">{description}</p>
+      <h3 className="font-serif font-normal text-2xl text-ink">{title}</h3>
+      <p className="font-sans text-xs sm:text-sm text-muted mt-2 leading-relaxed">{description}</p>
     </div>
   );
 };

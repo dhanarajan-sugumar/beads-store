@@ -79,24 +79,24 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-50 overflow-y-auto bg-ink/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="share-modal-title"
       onClick={onClose}
     >
       <div
-        className="relative bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-100 space-y-6"
+        className="relative bg-ivory rounded-[2px] max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gold/40 space-y-6"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-gray-100 pb-4">
+        <div className="flex items-start justify-between border-b border-gold/30 pb-4">
           <div>
-            <h2 id="share-modal-title" className="font-serif font-bold text-2xl text-gray-900">
+            <h2 id="share-modal-title" className="font-serif font-normal text-2xl sm:text-3xl text-ink">
               Share or Download Order
             </h2>
-            <p className="text-xs text-gray-500 mt-1">
-              Order Reference: <span className="font-mono font-semibold text-primary-700">{orderRef}</span>
+            <p className="text-xs font-sans text-muted mt-1">
+              Order Reference: <span className="font-mono text-oxblood font-medium">{orderRef}</span>
             </p>
           </div>
           <button
@@ -104,37 +104,37 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
             type="button"
             onClick={onClose}
             aria-label="Close share dialog"
-            className="min-w-[44px] min-h-[44px] -mt-1 -mr-1 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors"
+            className="min-w-[44px] min-h-[44px] -mt-1 -mr-1 rounded-full flex items-center justify-center text-ink hover:text-oxblood focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood transition-colors"
           >
-            <X className="w-5 h-5" aria-hidden="true" />
+            <X className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
           </button>
         </div>
 
         {generating ? (
           <div className="py-12 flex flex-col items-center justify-center space-y-3 text-center">
-            <Loader2 className="w-9 h-9 text-primary-600 animate-spin" />
-            <p className="font-medium text-gray-900 text-sm">Preparing your order summary & PDF...</p>
-            <p className="text-xs text-gray-500">Compiling items, photos, and prices.</p>
+            <Loader2 className="w-8 h-8 text-oxblood animate-spin stroke-[1.5]" />
+            <p className="font-serif text-lg text-ink font-normal">Preparing your order summary...</p>
+            <p className="text-xs font-sans text-muted">Compiling pieces and creating your PDF document.</p>
           </div>
         ) : (
           <div className="space-y-4">
-            <p className="text-xs sm:text-sm text-gray-600">
-              Choose how you would like to proceed with your order for <span className="font-semibold text-gray-900">{env.shopName}</span>:
+            <p className="text-xs sm:text-sm font-sans text-muted">
+              Choose how you would like to proceed with your order for <span className="font-medium text-ink">{env.shopName}</span>:
             </p>
 
             {/* Choice 1: WhatsApp (Recommended) */}
-            <div className="p-4 rounded-xl border-2 border-green-500 bg-green-50/50 space-y-2.5 shadow-xs">
+            <div className="p-4 rounded-[2px] border border-gold/50 bg-white/40 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-green-800 bg-green-100 px-2 py-0.5 rounded">
-                  Option 1 (Recommended)
+                <span className="text-[10px] font-sans font-medium uppercase tracking-[0.15em] text-gold">
+                  Option 1 (Direct)
                 </span>
-                <span className="text-xs text-green-700 font-medium">Fastest</span>
+                <span className="text-xs font-sans text-muted font-normal">Instant</span>
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-sans font-medium text-ink">
                   Send Order directly on WhatsApp
                 </p>
-                <p className="text-xs text-gray-600 mt-0.5">
+                <p className="text-xs font-sans text-muted mt-0.5">
                   Opens WhatsApp with all your items, prices, and reference number pre-filled.
                 </p>
               </div>
@@ -142,41 +142,41 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
                 href={whatsAppUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full min-h-[44px] px-4 py-3 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 transition-colors flex items-center justify-center gap-2 shadow-sm"
+                className="w-full min-h-[44px] px-4 py-2.5 rounded-[2px] bg-[#2E7D32] hover:bg-[#256629] text-ivory text-xs font-sans font-medium tracking-[0.12em] uppercase focus:outline-none focus-visible:ring-1 focus-visible:ring-gold transition-colors flex items-center justify-center gap-2 shadow-xs"
               >
-                <MessageCircle className="w-5 h-5" aria-hidden="true" />
+                <MessageCircle className="w-4 h-4 stroke-[1.5]" aria-hidden="true" />
                 <span>Open WhatsApp & Send Order</span>
-                <ArrowRight className="w-4 h-4 ml-1" aria-hidden="true" />
+                <ArrowRight className="w-3.5 h-3.5 stroke-[1.5]" aria-hidden="true" />
               </a>
             </div>
 
             {/* Visual Divider */}
             <div className="relative flex py-1 items-center">
-              <div className="flex-grow border-t border-gray-200"></div>
-              <span className="shrink-0 mx-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              <div className="flex-grow border-t border-gold/30"></div>
+              <span className="shrink-0 mx-3 text-[10px] font-sans text-muted uppercase tracking-[0.2em]">
                 OR
               </span>
-              <div className="flex-grow border-t border-gray-200"></div>
+              <div className="flex-grow border-t border-gold/30"></div>
             </div>
 
             {/* Choice 2: Download PDF */}
-            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50/60 space-y-2.5">
+            <div className="p-4 rounded-[2px] border border-gold/30 bg-white/20 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-600 bg-gray-200 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-sans uppercase tracking-[0.15em] text-muted font-medium">
                   Option 2
                 </span>
                 {downloaded && (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
+                  <span className="inline-flex items-center gap-1 text-xs font-sans text-oxblood">
                     <CheckCircle className="w-3.5 h-3.5" />
                     Downloaded
                   </span>
                 )}
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-sans font-medium text-ink">
                   Download Order PDF & Send to us on WhatsApp
                 </p>
-                <p className="text-xs text-gray-600 mt-0.5">
+                <p className="text-xs font-sans text-muted mt-0.5">
                   Save a printable A4 order document with product photos, descriptions, and grand total, and send it to our WhatsApp to place your order.
                 </p>
               </div>

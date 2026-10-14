@@ -8,24 +8,24 @@ export const ProductSkeleton: React.FC<ProductSkeletonProps> = ({ count = 6 }) =
   return (
     <div
       aria-label="Loading products"
-      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
+      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8"
     >
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm animate-pulse flex flex-col"
+          className="flex flex-col animate-pulse"
         >
-          {/* Image skeleton */}
-          <div className="w-full aspect-square bg-gray-200" />
+          {/* 4:5 Portrait Image skeleton */}
+          <div className="w-full aspect-[4/5] bg-stone-200/50 rounded-[2px]" />
           {/* Content skeleton */}
-          <div className="p-3 sm:p-4 space-y-2.5 flex-1 flex flex-col justify-between">
-            <div className="space-y-1.5">
-              <div className="h-4 bg-gray-200 rounded w-3/4" />
-              <div className="h-3 bg-gray-100 rounded w-1/2" />
+          <div className="pt-3.5 pb-1 space-y-2 flex-1 flex flex-col justify-between">
+            <div>
+              <div className="h-2.5 bg-stone-200/40 rounded-xs w-14 mb-1.5" />
+              <div className="h-4 bg-stone-200/60 rounded-xs w-4/5 mb-1" />
+              <div className="h-3.5 bg-stone-200/50 rounded-xs w-20 mt-2" />
             </div>
-            <div className="pt-2 flex items-center justify-between">
-              <div className="h-5 bg-gray-200 rounded w-16" />
-              <div className="h-9 w-20 bg-gray-200 rounded-lg" />
+            <div className="mt-2.5">
+              <div className="h-[44px] bg-stone-200/40 rounded-[2px] w-full" />
             </div>
           </div>
         </div>

@@ -10,20 +10,20 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ message, onRetry }) => {
   return (
     <div
       role="alert"
-      className="flex flex-col items-center justify-center p-8 sm:p-12 text-center bg-white rounded-2xl border border-red-100 shadow-sm max-w-lg mx-auto"
+      className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-md mx-auto"
     >
-      <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4 text-red-600">
-        <AlertCircle className="w-8 h-8" aria-hidden="true" />
+      <div className="w-12 h-12 rounded-full border border-red-300 flex items-center justify-center mb-4 text-red-600">
+        <AlertCircle className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
       </div>
-      <h3 className="text-xl font-serif font-bold text-gray-900">Unable to load catalogue</h3>
-      <p className="text-sm text-gray-600 mt-2 max-w-md">{message}</p>
+      <h3 className="font-serif font-normal text-2xl text-ink">Unable to load catalogue</h3>
+      <p className="font-sans text-xs sm:text-sm text-muted mt-2 leading-relaxed">{message}</p>
       {onRetry && (
         <button
           type="button"
           onClick={onRetry}
-          className="mt-6 inline-flex items-center gap-2 min-h-[44px] px-6 py-2.5 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors"
+          className="mt-6 inline-flex items-center gap-2 min-h-[44px] px-6 py-2.5 rounded-[2px] border border-oxblood text-oxblood hover:bg-oxblood hover:text-ivory text-xs font-sans font-medium tracking-[0.15em] uppercase transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
         >
-          <RefreshCw className="w-4 h-4" aria-hidden="true" />
+          <RefreshCw className="w-3.5 h-3.5 stroke-[1.5]" aria-hidden="true" />
           <span>Try Again</span>
         </button>
       )}
