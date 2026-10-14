@@ -1,9 +1,17 @@
 import React from 'react';
 import { Sparkles, AlertCircle } from 'lucide-react';
 import { env } from '@/config/env';
+import { useProducts } from '@/hooks/useProducts';
+import { ProductGrid } from '@/components/catalogue/ProductGrid';
+import type { Product } from '@/types/database';
 
-export const HomePage: React.FC = () => {
+interface HomePageProps {
+  onAddToCart?: (product: Product) => void;
+}
+
+export const HomePage: React.FC<HomePageProps> = ({ onAddToCart }) => {
   const isEnvConfigured = Boolean(env.supabaseUrl && env.supabasePublishableKey);
+  const { products, loading, error, refetch } = useProducts();
 
   return (
     <div className="space-y-8">
@@ -39,20 +47,32 @@ export const HomePage: React.FC = () => {
         </p>
       </section>
 
-      {/* Scaffold Placeholder for Catalogue */}
-      <section aria-labelledby="catalogue-heading" className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 id="catalogue-heading" className="text-2xl font-serif font-bold text-gray-900">
-            Our Collection
-          </h2>
-          <span className="text-sm text-gray-500">Catalogue ready for feature/catalogue</span>
+      {/* Catalogue Grid Section */}
+      <section aria-labelledby="catalogue-heading" className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-gray-200 pb-4">
+          <div>
+            <h2 id="catalogue-heading" className="text-2xl font-serif font-bold text-gray-900">
+              Our Collection
+            </h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Unique pieces handmade with premium beads and materials
+            </p>
+          </div>
+
+          {!loading && !error && products.length > 0 && (
+            <span className="text-sm text-gray-500 font-medium self-start sm:self-auto">
+              {products.length} {products.length === 1 ? 'piece' : 'pieces'} available
+            </span>
+          )}
         </div>
 
-        <div className="bg-white rounded-xl p-8 border border-dashed border-gray-300 text-center">
-          <p className="text-gray-500 text-sm">
-            Product catalogue grid and details view will be implemented in the next feature branch.
-          </p>
-        </div>
+        <ProductGrid
+          products={products}
+          loading={loading}
+          error={error}
+          onRetry={refetch}
+          onAddToCart={onAddToCart}
+        />
       </section>
     </div>
   );
