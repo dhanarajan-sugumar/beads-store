@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { X, FileDown, MessageCircle, CheckCircle, Loader2, Share2 } from 'lucide-react';
+import { X, FileDown, MessageCircle, CheckCircle, Loader2, ArrowRight } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { env } from '@/config/env';
 import { generateOrderPdf } from '@/utils/pdfGenerator';
@@ -16,22 +16,10 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [pdfFileName, setPdfFileName] = useState<string>('');
   const [downloaded, setDownloaded] = useState<boolean>(false);
-  const [supportsWebShare, setSupportsWebShare] = useState<boolean>(false);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
 
-  // Check if browser supports Web Share API with files
-  useEffect(() => {
-    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-      try {
-        const testFile = new File(['test'], 'test.pdf', { type: 'application/pdf' });
-        if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [testFile] })) {
-          setSupportsWebShare(true);
-        }
-      } catch {
-        setSupportsWebShare(false);
-      }
-    }
-  }, []);
+  // Generate a stable reference number for this order session (e.g. MH-582910)
+  const orderRef = useRef<string>(`MH-${Math.floor(100000 + Math.random() * 900000)}`).current;
 
   // Generate PDF when modal opens
   useEffect(() => {
@@ -41,7 +29,7 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
       setGenerating(true);
       setDownloaded(false);
 
-      generateOrderPdf(env.shopName, items, grandTotal)
+      generateOrderPdf(env.shopName, items, grandTotal, orderRef)
         .then(({ blob, fileName }) => {
           if (isMounted) {
             setPdfBlob(blob);
@@ -58,7 +46,7 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
     return () => {
       isMounted = false;
     };
-  }, [isOpen, items, grandTotal]);
+  }, [isOpen, items, grandTotal, orderRef]);
 
   // Handle ESC key
   useEffect(() => {
@@ -78,7 +66,7 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
     const url = URL.createObjectURL(pdfBlob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = pdfFileName || 'madhis-handcrafts-order.pdf';
+    a.download = pdfFileName || `Order-${env.shopName}-${orderRef}.pdf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -86,51 +74,44 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
     setDownloaded(true);
   };
 
-  const handleWebShare = async () => {
-    if (!pdfBlob) return;
-    try {
-      const file = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
-      await navigator.share({
-        title: `Order - ${env.shopName}`,
-        text: buildWhatsAppOrderMessage(env.shopName, items, grandTotal),
-        files: [file],
-      });
-    } catch (error) {
-      // User cancelled share or share failed; fallback to download
-      if ((error as Error)?.name !== 'AbortError') {
-        downloadPdfFile();
-      }
+  const whatsAppText = buildWhatsAppOrderMessage(env.shopName, items, grandTotal, orderRef);
+  const whatsAppUrl = getWhatsAppShareUrl(whatsAppText);
+
+  const handleWhatsAppClick = () => {
+    // If user hasn't downloaded yet, trigger download automatically so they have the file ready
+    if (!downloaded) {
+      downloadPdfFile();
     }
   };
 
-  const whatsAppText = buildWhatsAppOrderMessage(env.shopName, items, grandTotal);
-  const whatsAppUrl = getWhatsAppShareUrl(whatsAppText);
-
   return (
     <div
-      className="fixed inset-0 z-60 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="share-modal-title"
       onClick={onClose}
     >
       <div
-        className="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 space-y-5"
+        className="relative bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-100 space-y-6"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-          <div className="flex items-center gap-2">
-            <h2 id="share-modal-title" className="font-serif font-bold text-xl text-gray-900">
-              Share Order
+        <div className="flex items-start justify-between border-b border-gray-100 pb-4">
+          <div>
+            <h2 id="share-modal-title" className="font-serif font-bold text-2xl text-gray-900">
+              Share Order on WhatsApp
             </h2>
+            <p className="text-xs text-gray-500 mt-1">
+              Order Reference: <span className="font-mono font-semibold text-primary-700">{orderRef}</span>
+            </p>
           </div>
           <button
             ref={closeBtnRef}
             type="button"
             onClick={onClose}
             aria-label="Close share dialog"
-            className="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors"
+            className="min-w-[44px] min-h-[44px] -mt-1 -mr-1 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors"
           >
             <X className="w-5 h-5" aria-hidden="true" />
           </button>
@@ -138,67 +119,79 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
 
         {generating ? (
           <div className="py-12 flex flex-col items-center justify-center space-y-3 text-center">
-            <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
-            <p className="font-medium text-gray-900 text-sm">Preparing your order PDF...</p>
-            <p className="text-xs text-gray-500">Formatting item details and images for sharing.</p>
+            <Loader2 className="w-9 h-9 text-primary-600 animate-spin" />
+            <p className="font-medium text-gray-900 text-sm">Generating your order PDF...</p>
+            <p className="text-xs text-gray-500">Compiling items, photos, and prices.</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-primary-50/60 border border-primary-100 flex items-start gap-3 text-sm text-primary-950">
+          <div className="space-y-5">
+            {/* Order status card */}
+            <div className="p-4 rounded-xl bg-primary-50/70 border border-primary-100 flex items-start gap-3">
               <CheckCircle className="w-5 h-5 text-primary-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-gray-900">Your order PDF is ready!</p>
-                <p className="text-xs text-gray-600 mt-0.5">
-                  Send it directly to {env.shopName} on WhatsApp to confirm your pieces.
+              <div className="text-xs sm:text-sm text-gray-700 space-y-1">
+                <p className="font-semibold text-gray-900">Order document prepared for {env.shopName}</p>
+                <p className="text-gray-600">
+                  Follow these 2 quick steps to place your order directly via WhatsApp:
                 </p>
               </div>
             </div>
 
-            {/* Direct Web Share API button if supported (mobile browsers) */}
-            {supportsWebShare && (
+            {/* Step 1: Download PDF */}
+            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50/50 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                  Step 1
+                </span>
+                {downloaded && (
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    Downloaded
+                  </span>
+                )}
+              </div>
+              <p className="text-sm font-medium text-gray-900">
+                Download your order PDF with product photos & item list
+              </p>
               <button
                 type="button"
-                onClick={handleWebShare}
-                className="w-full min-h-[44px] px-4 py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors flex items-center justify-center gap-2 shadow-sm"
+                onClick={downloadPdfFile}
+                className={`w-full min-h-[44px] px-4 py-2.5 rounded-lg border text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors flex items-center justify-center gap-2 ${
+                  downloaded
+                    ? 'border-green-300 bg-green-50 text-green-800 hover:bg-green-100'
+                    : 'border-gray-300 bg-white text-gray-800 hover:bg-gray-100 shadow-sm'
+                }`}
               >
-                <Share2 className="w-5 h-5" aria-hidden="true" />
-                <span>Share PDF via WhatsApp / Apps</span>
+                <FileDown className="w-4 h-4" aria-hidden="true" />
+                <span>{downloaded ? 'Download PDF Again' : 'Download Order PDF'}</span>
               </button>
-            )}
+            </div>
 
-            {/* Download PDF button */}
-            <button
-              type="button"
-              onClick={downloadPdfFile}
-              className={`w-full min-h-[44px] px-4 py-3 rounded-xl border ${
-                downloaded
-                  ? 'border-green-300 bg-green-50 text-green-800'
-                  : 'border-gray-300 bg-white text-gray-800 hover:bg-gray-50'
-              } font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors flex items-center justify-center gap-2`}
-            >
-              <FileDown className="w-5 h-5" aria-hidden="true" />
-              <span>{downloaded ? 'PDF Downloaded (Click to download again)' : 'Download Order PDF'}</span>
-            </button>
+            {/* Step 2: Open WhatsApp */}
+            <div className="p-4 rounded-xl border border-green-200 bg-green-50/40 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-green-700">
+                  Step 2
+                </span>
+              </div>
+              <p className="text-sm font-medium text-gray-900">
+                Send your order to WhatsApp and attach your downloaded PDF
+              </p>
+              <a
+                href={whatsAppUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleWhatsAppClick}
+                className="w-full min-h-[44px] px-4 py-3 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                <MessageCircle className="w-5 h-5" aria-hidden="true" />
+                <span>Open WhatsApp & Send Order</span>
+                <ArrowRight className="w-4 h-4 ml-1" aria-hidden="true" />
+              </a>
+            </div>
 
-            {/* Direct WhatsApp Share Link */}
-            <a
-              href={whatsAppUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => {
-                if (!downloaded) {
-                  downloadPdfFile();
-                }
-              }}
-              className="w-full min-h-[44px] px-4 py-3 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 transition-colors flex items-center justify-center gap-2 shadow-sm"
-            >
-              <MessageCircle className="w-5 h-5" aria-hidden="true" />
-              <span>Share on WhatsApp</span>
-            </a>
-
-            <p className="text-center text-xs text-gray-500 pt-1">
-              Clicking "Share on WhatsApp" will download the PDF and open WhatsApp with your order details pre-filled.
-            </p>
+            <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
+              💡 <span className="font-semibold text-gray-700">How WhatsApp order sharing works:</span> Clicking the button above automatically downloads the PDF and opens WhatsApp with your order details & reference number pre-filled. Simply tap the paperclip/attachment icon in WhatsApp and send your downloaded PDF!
+            </div>
           </div>
         )}
       </div>

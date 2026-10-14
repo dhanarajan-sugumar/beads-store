@@ -2,17 +2,27 @@ import type { CartItem } from './cartStorage';
 import { formatInrPrice } from './formatters';
 
 /**
- * Builds a clean, friendly WhatsApp message text summarizing the order.
+ * Builds a clean, friendly WhatsApp message text summarizing the order with order reference code.
  */
 export function buildWhatsAppOrderMessage(
   shopName: string,
   items: CartItem[],
-  grandTotal: number
+  grandTotal: number,
+  refCode?: string
 ): string {
   const lines: string[] = [];
 
   lines.push(`*New Order for ${shopName}*`);
-  lines.push(`Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`);
+  if (refCode) {
+    lines.push(`*Order Ref:* ${refCode}`);
+  }
+  lines.push(
+    `*Date:* ${new Date().toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    })}`
+  );
   lines.push('');
   lines.push('*Items Ordered:*');
 
@@ -27,7 +37,8 @@ export function buildWhatsAppOrderMessage(
   lines.push('');
   lines.push(`*Grand Total: ${formatInrPrice(grandTotal)}*`);
   lines.push('');
-  lines.push('I have attached my order PDF. Please confirm availability and payment details!');
+  lines.push('📎 _(I have attached my order PDF with piece photos)._');
+  lines.push('Please confirm availability and payment details!');
 
   return lines.join('\n');
 }

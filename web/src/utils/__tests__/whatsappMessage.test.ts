@@ -23,9 +23,10 @@ describe('whatsappMessage', () => {
     },
   ];
 
-  it('builds a detailed order message with shop name, items, and grand total', () => {
-    const message = buildWhatsAppOrderMessage('Madhis Handcrafts', mockItems, 2297);
+  it('builds a detailed order message with shop name, items, reference code, and grand total', () => {
+    const message = buildWhatsAppOrderMessage('Madhis Handcrafts', mockItems, 2297, 'MH-892301');
     expect(message).toContain('*New Order for Madhis Handcrafts*');
+    expect(message).toContain('*Order Ref:* MH-892301');
     expect(message).toContain('1. *Crystal Bracelet*');
     expect(message).toContain('Qty: 2 ×');
     expect(message).toContain('2. *Glass Necklace*');

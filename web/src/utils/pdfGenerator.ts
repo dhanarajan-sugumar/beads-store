@@ -47,7 +47,8 @@ export interface GeneratedPdfResult {
 export async function generateOrderPdf(
   shopName: string,
   items: CartItem[],
-  grandTotal: number
+  grandTotal: number,
+  customRefCode?: string
 ): Promise<GeneratedPdfResult> {
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -88,7 +89,7 @@ export async function generateOrderPdf(
   });
   doc.setFontSize(9);
   doc.text(`Date: ${dateStr}`, pageWidth - margin, currentY + 6, { align: 'right' });
-  const refCode = `MH-${Date.now().toString().slice(-6)}`;
+  const refCode = customRefCode || `MH-${Date.now().toString().slice(-6)}`;
   doc.text(`Ref: ${refCode}`, pageWidth - margin, currentY + 11, { align: 'right' });
 
   currentY += 18;

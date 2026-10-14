@@ -9,7 +9,7 @@ import { CartDrawer } from '@/components/cart/CartDrawer';
 import { OrderShareModal } from '@/components/cart/OrderShareModal';
 
 const AppContent: React.FC = () => {
-  const { itemCount, openCart, addItem } = useCart();
+  const { itemCount, openCart, closeCart, addItem } = useCart();
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
 
   return (
@@ -30,7 +30,12 @@ const AppContent: React.FC = () => {
         </Routes>
       </BrowserRouter>
 
-      <CartDrawer onOpenPdfShare={() => setIsShareModalOpen(true)} />
+      <CartDrawer
+        onOpenPdfShare={() => {
+          closeCart();
+          setIsShareModalOpen(true);
+        }}
+      />
       <OrderShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
