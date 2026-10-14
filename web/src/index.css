@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 min-h-screen antialiased;
+  }
+
+  /* Accessible focus styling */
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary-600 ring-offset-2;
+  }
+}
