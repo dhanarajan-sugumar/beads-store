@@ -37,7 +37,6 @@ export function buildWhatsAppOrderMessage(
   lines.push('');
   lines.push(`*Grand Total: ${formatInrPrice(grandTotal)}*`);
   lines.push('');
-  lines.push('📎 _(I have attached my order PDF with piece photos)._');
   lines.push('Please confirm availability and payment details!');
 
   return lines.join('\n');

@@ -174,7 +174,7 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
                 </span>
               </div>
               <p className="text-sm font-medium text-gray-900">
-                Send your order to WhatsApp and attach your downloaded PDF
+                Send your order breakdown directly to Madhis Handcrafts on WhatsApp
               </p>
               <a
                 href={whatsAppUrl}
@@ -190,7 +190,7 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
             </div>
 
             <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
-              💡 <span className="font-semibold text-gray-700">How WhatsApp order sharing works:</span> Clicking the button above automatically downloads the PDF and opens WhatsApp with your order details & reference number pre-filled. Simply tap the paperclip/attachment icon in WhatsApp and send your downloaded PDF!
+              💡 <span className="font-semibold text-gray-700">How order sharing works:</span> Clicking the button above opens WhatsApp with your complete order breakdown and Order Reference pre-filled. You can also download the PDF document above as your official receipt or share it in the chat if desired!
             </div>
           </div>
         )}
