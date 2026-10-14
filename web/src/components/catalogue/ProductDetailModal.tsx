@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Plus, ImageOff, Maximize2 } from 'lucide-react';
+import { X, Plus, Minus, ImageOff, Maximize2, ShoppingBag } from 'lucide-react';
 import type { Product } from '@/types/database';
 import { formatInrPrice } from '@/utils/formatters';
+import { useCart } from '@/hooks/useCart';
+import { useToast } from '@/hooks/useToast';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -17,6 +19,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [imageError, setImageError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const { items, addItem, updateQuantity, removeItem, openCart } = useCart();
+  const { showToast } = useToast();
+
+  const cartItem = items.find((item) => item.id === product?.id);
+  const quantityInCart = cartItem ? cartItem.quantity : 0;
 
   useEffect(() => {
     setImageError(false);
@@ -53,11 +60,23 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   if (!product) return null;
 
+  const handleAddToCart = () => {
+    if (onAddToCart) {
+      onAddToCart(product);
+    } else {
+      addItem(product);
+    }
+    showToast(`${product.name} added to your bag`, {
+      label: 'View Bag',
+      onClick: openCart,
+    });
+  };
+
   return (
     <>
       {/* Product Detail Modal */}
       <div
-        className={`fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 ${
+        className={`fixed inset-0 z-50 overflow-y-auto bg-ink/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 ${
           isFullscreen ? 'invisible pointer-events-none' : ''
         }`}
         role="dialog"
@@ -66,7 +85,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         onClick={onClose}
       >
         <div
-          className="relative bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-gray-100 flex flex-col max-h-[90vh]"
+          className="relative bg-ivory rounded-[2px] max-w-4xl w-full overflow-hidden shadow-2xl border border-gold/40 flex flex-col max-h-[90vh] my-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close button with >= 44px touch target */}
@@ -75,15 +94,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Close product details"
-            className="absolute top-3 right-3 z-10 min-w-[44px] min-h-[44px] p-2 rounded-full bg-white/90 text-gray-700 hover:text-gray-900 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 shadow-sm flex items-center justify-center transition-colors"
+            className="absolute top-3 right-3 z-20 min-w-[44px] min-h-[44px] p-2.5 rounded-full bg-ivory/90 hover:bg-ivory text-ink hover:text-oxblood border border-gold/40 shadow-xs flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
           >
-            <X className="w-5 h-5" aria-hidden="true" />
+            <X className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
           </button>
 
-          {/* Modal scrollable body */}
-          <div className="overflow-y-auto flex-1">
-            {/* Image - full uncropped view with object-contain */}
-            <div className="relative w-full max-h-[58vh] min-h-[260px] bg-stone-50 flex items-center justify-center p-3 sm:p-4 border-b border-gray-100 group">
+          {/* Modal scrollable body - 2 Column on Desktop */}
+          <div className="overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2">
+            {/* Left: Large Image with object-contain */}
+            <div className="relative w-full bg-stone-100/50 flex items-center justify-center p-4 sm:p-8 border-b md:border-b-0 md:border-r border-gold/30 min-h-[260px] md:min-h-[420px] group">
               {product.image_url && !imageError ? (
                 <>
                   <img
@@ -92,7 +111,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     onClick={() => setIsFullscreen(true)}
                     onError={() => setImageError(true)}
                     title="Click to view full screen"
-                    className="max-h-[54vh] w-auto max-w-full object-contain mx-auto rounded-lg drop-shadow-xs cursor-zoom-in transition-transform group-hover:scale-[1.01]"
+                    className="max-h-[44vh] md:max-h-[64vh] w-auto max-w-full object-contain mx-auto rounded-[2px] cursor-zoom-in transition-transform group-hover:scale-[1.02] duration-300"
                   />
 
                   {/* Fullscreen button overlay */}
@@ -100,83 +119,115 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     type="button"
                     onClick={() => setIsFullscreen(true)}
                     aria-label="View photo in full screen"
-                    className="absolute bottom-3 right-3 min-h-[36px] px-3 py-1.5 rounded-full bg-white/90 hover:bg-white text-gray-800 text-xs font-semibold shadow-md flex items-center gap-1.5 backdrop-blur-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                    className="absolute bottom-3 right-3 min-h-[36px] px-3 py-1.5 rounded-[2px] bg-ivory/90 hover:bg-ivory text-ink text-[11px] font-sans tracking-wider uppercase border border-gold/40 shadow-xs flex items-center gap-1.5 backdrop-blur-xs transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
                   >
-                    <Maximize2 className="w-3.5 h-3.5 text-gray-700" aria-hidden="true" />
+                    <Maximize2 className="w-3.5 h-3.5 text-ink stroke-[1.5]" aria-hidden="true" />
                     <span>Fullscreen</span>
                   </button>
                 </>
               ) : (
-                <div className="w-full h-48 flex flex-col items-center justify-center bg-gray-50 text-gray-400 p-6">
-                  <ImageOff className="w-12 h-12 mb-2" aria-hidden="true" />
-                  <span className="text-sm">No image available</span>
+                <div className="w-full h-48 flex flex-col items-center justify-center text-muted p-6">
+                  <ImageOff className="w-10 h-10 mb-2 stroke-[1.5]" aria-hidden="true" />
+                  <span className="text-xs uppercase tracking-wider font-sans">No image available</span>
                 </div>
               )}
             </div>
 
-            {/* Details */}
-            <div className="p-5 sm:p-6 space-y-4">
-              <div className="flex flex-wrap items-center gap-2">
-                {product.sku && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-50 text-primary-800 border border-primary-200 font-mono">
-                    SKU: {product.sku}
-                  </span>
-                )}
-                {product.category && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 capitalize">
-                    {product.category}
-                  </span>
-                )}
-              </div>
+            {/* Right: Details & Action */}
+            <div className="p-6 sm:p-8 flex flex-col justify-between">
+              <div className="space-y-4">
+                {/* Category & SKU */}
+                <div className="flex items-center gap-2 text-[11px] font-sans tracking-[0.15em] uppercase text-muted">
+                  {product.category && <span>{product.category}</span>}
+                  {product.category && product.sku && <span>•</span>}
+                  {product.sku && <span>{product.sku}</span>}
+                </div>
 
-              <div className="flex items-start justify-between gap-4">
+                {/* Name in Jost Bold */}
                 <h2
                   id="product-modal-title"
-                  className="text-xl sm:text-2xl font-serif font-bold text-gray-900 leading-snug"
+                  className="font-sans font-bold text-2xl sm:text-3xl text-ink leading-tight"
                 >
                   {product.name}
                 </h2>
-              </div>
 
-              <div className="text-2xl font-serif font-bold text-primary-700">
-                {formatInrPrice(product.price_inr)}
-              </div>
-
-              {product.description && (
-                <div className="prose prose-sm text-gray-600 border-t border-gray-100 pt-3">
-                  <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                    Description
-                  </h3>
-                  <p className="whitespace-pre-line leading-relaxed">
-                    {product.description}
-                  </p>
+                {/* Price in Jost oxblood */}
+                <div className="font-sans font-medium text-lg sm:text-xl text-oxblood">
+                  {formatInrPrice(product.price_inr)}
                 </div>
-              )}
-            </div>
-          </div>
 
-          {/* Modal footer actions */}
-          <div className="p-4 sm:p-5 border-t border-gray-100 bg-gray-50/80 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="min-h-[44px] px-4 py-2.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 transition-colors"
-            >
-              Close
-            </button>
-            {onAddToCart && (
-              <button
-                type="button"
-                onClick={() => {
-                  onAddToCart(product);
-                  onClose();
-                }}
-                className="min-h-[44px] px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 shadow-sm flex items-center gap-2 transition-colors"
-              >
-                <Plus className="w-4 h-4" aria-hidden="true" />
-                Add to Cart
-              </button>
-            )}
+                {/* Thin gold divider */}
+                <div className="border-t border-gold/30 pt-3" />
+
+                {/* Description */}
+                {product.description && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-sans uppercase tracking-[0.15em] text-muted font-medium">
+                      Description
+                    </p>
+                    <p className="font-sans text-xs sm:text-sm text-ink/80 leading-relaxed whitespace-pre-line">
+                      {product.description}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom Actions */}
+              <div className="pt-6 mt-6 border-t border-gold/30">
+                {quantityInCart === 0 ? (
+                  <button
+                    type="button"
+                    onClick={handleAddToCart}
+                    className="w-full min-h-[44px] px-6 py-2.5 rounded-[2px] bg-oxblood text-ivory hover:bg-oxblood-hover text-xs font-sans font-medium tracking-[0.15em] uppercase transition-colors shadow-xs flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
+                  >
+                    <Plus className="w-4 h-4 stroke-[1.5]" aria-hidden="true" />
+                    <span>Add to order</span>
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 min-h-[44px] rounded-[2px] border border-oxblood/80 flex items-center justify-between px-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (quantityInCart <= 1) {
+                            removeItem(product.id);
+                          } else {
+                            updateQuantity(product.id, quantityInCart - 1);
+                          }
+                        }}
+                        aria-label={`Decrease quantity of ${product.name}`}
+                        className="min-w-[40px] min-h-[44px] flex items-center justify-center text-oxblood hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
+                      >
+                        <Minus className="w-3.5 h-3.5" aria-hidden="true" />
+                      </button>
+                      <span className="font-sans font-medium text-xs sm:text-sm text-ink px-2 text-center">
+                        {quantityInCart} in bag
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => updateQuantity(product.id, quantityInCart + 1)}
+                        aria-label={`Increase quantity of ${product.name}`}
+                        className="min-w-[40px] min-h-[44px] flex items-center justify-center text-oxblood hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
+                      >
+                        <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        openCart();
+                      }}
+                      className="min-h-[44px] px-4 py-2.5 rounded-[2px] bg-oxblood text-ivory text-xs font-sans font-medium tracking-[0.1em] uppercase hover:bg-oxblood-hover transition-colors flex items-center gap-1.5 shadow-xs"
+                    >
+                      <ShoppingBag className="w-3.5 h-3.5" aria-hidden="true" />
+                      <span>View Bag</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

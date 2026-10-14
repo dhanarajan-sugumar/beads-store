@@ -27,8 +27,11 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   ];
 
   return (
-    <nav aria-label="Product categories" className="w-full mb-6">
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar sm:flex-wrap">
+    <nav
+      aria-label="Product categories"
+      className="sticky top-16 sm:top-20 z-20 bg-ivory/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-gold/25 mb-4 sm:mb-6 transition-all"
+    >
+      <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto pb-px no-scrollbar sm:justify-center">
         {categories.map((cat) => {
           const isSelected = selectedCategory === cat.id;
           return (
@@ -37,22 +40,24 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
               type="button"
               onClick={() => onSelectCategory(cat.id)}
               aria-pressed={isSelected}
-              className={`min-h-[44px] px-4 py-2 rounded-full text-sm font-medium transition-all duration-150 whitespace-nowrap flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 ${
+              className={`min-h-[44px] py-3 px-1 relative text-[11px] sm:text-xs font-sans tracking-[0.18em] uppercase transition-colors whitespace-nowrap flex items-center gap-1.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood ${
                 isSelected
-                  ? 'bg-primary-600 text-white shadow-xs'
-                  : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                  ? 'text-ink font-medium'
+                  : 'text-muted hover:text-ink'
               }`}
             >
               <span>{cat.label}</span>
-              <span
-                className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                  isSelected
-                    ? 'bg-primary-700/80 text-white'
-                    : 'bg-gray-100 text-gray-600'
-                }`}
-              >
-                {cat.count}
+              <span className="text-[10px] sm:text-[11px] tracking-normal font-sans text-muted">
+                ({cat.count})
               </span>
+
+              {/* 1px gold underline for active tab */}
+              {isSelected && (
+                <span
+                  className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-gold"
+                  aria-hidden="true"
+                />
+              )}
             </button>
           );
         })}
@@ -60,3 +65,4 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
     </nav>
   );
 };
+

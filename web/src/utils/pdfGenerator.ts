@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import type { CartItem } from './cartStorage';
+import { env } from '@/config/env';
 
 /**
  * Safely fetches an image and converts it to a base64 data URL.
@@ -234,8 +235,9 @@ export async function generateOrderPdf(
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(8.5);
   doc.setTextColor(100, 100, 100);
+  const contactNumber = env.whatsappNumber || '+91 99447 17970';
   doc.text(
-    'Please share this PDF directly with Madhis Handcrafts on WhatsApp to confirm piece availability and payment.',
+    `Please share this PDF directly with ${shopName} on WhatsApp (${contactNumber}) to confirm piece availability and payment.`,
     pageWidth / 2,
     currentY,
     { align: 'center' }

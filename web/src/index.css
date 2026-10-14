@@ -9,11 +9,41 @@
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 min-h-screen antialiased;
+    @apply bg-ivory text-ink font-sans min-h-screen antialiased selection:bg-oxblood/15 selection:text-ink;
   }
 
-  /* Accessible focus styling */
+  /* Accessible focus styling in oxblood */
   :focus-visible {
-    @apply outline-none ring-2 ring-primary-600 ring-offset-2;
+    @apply outline-none ring-1 ring-oxblood ring-offset-2 ring-offset-ivory;
   }
 }
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-fade-up {
+    animation: fadeUp 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
+

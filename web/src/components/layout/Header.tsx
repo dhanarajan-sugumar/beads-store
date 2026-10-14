@@ -13,32 +13,40 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCart,
 }) => {
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo / Shop Title */}
+    <header className="sticky top-0 z-30 bg-ivory/95 backdrop-blur-md border-b border-gold/40">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-20">
+          {/* Left spacer to perfectly balance the right cart button */}
+          <div className="w-11 shrink-0" aria-hidden="true" />
+
+          {/* Centred Wordmark with Official Logo */}
           <Link
             to="/"
-            className="flex items-center gap-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 rounded-md p-1"
+            className="flex items-center justify-center gap-2 sm:gap-3 group focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood rounded-xs py-1 transition-opacity hover:opacity-90"
             aria-label={`${env.shopName} home page`}
           >
-            <span className="text-xl sm:text-2xl font-serif font-bold tracking-tight text-gray-900 group-hover:text-primary-700 transition-colors">
+            <img
+              src="/logo.png"
+              alt="Madhis Handcrafts Logo"
+              className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full object-contain shrink-0 shadow-xs"
+            />
+            <span className="font-serif font-light text-[21px] sm:text-[28px] md:text-[32px] tracking-[0.02em] text-ink transition-colors whitespace-nowrap">
               {env.shopName}
             </span>
           </Link>
 
-          {/* Action buttons (Cart, Admin Link) */}
-          <div className="flex items-center gap-2">
+          {/* Cart Icon with Oxblood Count Badge */}
+          <div className="w-11 shrink-0 flex items-center justify-end">
             <button
               type="button"
               onClick={onOpenCart}
-              className="relative min-w-[44px] min-h-[44px] flex items-center justify-center p-2 rounded-full text-gray-700 hover:text-primary-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors"
+              className="relative min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-ink hover:text-oxblood focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood transition-colors"
               aria-label={`Shopping bag with ${cartItemCount} items`}
             >
-              <ShoppingBag className="w-6 h-6" aria-hidden="true" />
+              <ShoppingBag className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
               {cartItemCount > 0 && (
                 <span
-                  className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs font-semibold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center"
+                  className="absolute top-1 right-1 bg-oxblood text-ivory text-[10px] font-sans font-medium rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center shadow-xs animate-in zoom-in-50 duration-150"
                   aria-hidden="true"
                 >
                   {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -51,3 +59,4 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+

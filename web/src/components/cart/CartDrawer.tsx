@@ -46,25 +46,25 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenPdfShare }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs flex justify-end"
+      className="fixed inset-0 z-50 overflow-hidden bg-ink/60 backdrop-blur-xs flex justify-end"
       role="dialog"
       aria-modal="true"
       aria-label="Shopping Cart"
       onClick={closeCart}
     >
       <div
-        className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col transform transition-transform duration-300 ease-out"
+        className="relative w-full max-w-md bg-ivory h-full shadow-2xl border-l border-gold/40 flex flex-col transform transition-transform duration-300 ease-out"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drawer Header */}
-        <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5 text-primary-700" aria-hidden="true" />
-            <h2 className="font-serif font-bold text-lg sm:text-xl text-gray-900">
+        <div className="p-4 sm:p-5 border-b border-gold/30 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <ShoppingBag className="w-4 h-4 text-oxblood stroke-[1.5]" aria-hidden="true" />
+            <h2 className="font-serif font-normal text-xl sm:text-2xl text-ink">
               Shopping Bag
             </h2>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary-50 text-primary-700">
-              {itemCount} {itemCount === 1 ? 'item' : 'items'}
+            <span className="text-xs font-sans text-muted">
+              ({itemCount} {itemCount === 1 ? 'item' : 'items'})
             </span>
           </div>
 
@@ -73,27 +73,29 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenPdfShare }) => {
             type="button"
             onClick={closeCart}
             aria-label="Close shopping bag"
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-ink hover:text-oxblood focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood transition-colors"
           >
-            <X className="w-5 h-5" aria-hidden="true" />
+            <X className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
           </button>
         </div>
 
         {/* Drawer Content / Items */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5">
           {items.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4 text-gray-500">
-              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
-                <ShoppingBag className="w-8 h-8" aria-hidden="true" />
+            <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4 text-muted">
+              <div className="w-14 h-14 rounded-full border border-gold/40 flex items-center justify-center text-gold">
+                <ShoppingBag className="w-6 h-6 stroke-[1.5]" aria-hidden="true" />
               </div>
               <div>
-                <p className="font-medium text-gray-900">Your bag is empty</p>
-                <p className="text-sm mt-1">Explore our handmade beads jewellery and add your favourite pieces.</p>
+                <p className="font-serif text-lg text-ink font-normal">Your bag is empty</p>
+                <p className="text-xs font-sans text-muted mt-1 max-w-xs">
+                  Explore our handcrafted bead jewellery and add your favourite pieces.
+                </p>
               </div>
               <button
                 type="button"
                 onClick={closeCart}
-                className="min-h-[44px] px-6 py-2 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors text-sm"
+                className="min-h-[44px] px-6 py-2.5 rounded-[2px] border border-oxblood text-oxblood hover:bg-oxblood hover:text-ivory text-xs font-sans font-medium tracking-[0.15em] uppercase transition-colors"
               >
                 Browse Catalogue
               </button>
@@ -104,19 +106,19 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenPdfShare }) => {
               return (
                 <div
                   key={item.id}
-                  className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-gray-50 transition-colors"
+                  className="flex items-start gap-3 p-3 rounded-[2px] border border-gold/25 bg-white/50"
                 >
-                  {/* Thumbnail */}
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-stone-50 border border-gray-100 shrink-0 flex items-center justify-center p-1">
+                  {/* Thumbnail in 4:5 crop */}
+                  <div className="w-16 h-20 rounded-[2px] overflow-hidden bg-stone-100/60 border border-gold/20 shrink-0 flex items-center justify-center">
                     {item.image_url ? (
                       <img
                         src={item.image_url}
                         alt={item.name}
                         loading="lazy"
-                        className="w-full h-full object-contain object-center"
+                        className="w-full h-full object-cover object-center"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                      <div className="w-full h-full flex items-center justify-center text-muted text-[10px] font-sans uppercase">
                         No img
                       </div>
                     )}
@@ -128,11 +130,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenPdfShare }) => {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           {item.sku && (
-                            <span className="font-mono text-[10px] font-semibold text-primary-700 bg-primary-50 px-1.5 py-0.2 rounded inline-block mb-0.5">
+                            <span className="text-[10px] font-sans tracking-wider text-muted block uppercase">
                               {item.sku}
                             </span>
                           )}
-                          <h3 className="font-medium text-gray-900 text-sm line-clamp-1">
+                          <h3 className="font-sans font-bold text-ink text-sm sm:text-base line-clamp-1">
                             {item.name}
                           </h3>
                         </div>
@@ -140,42 +142,42 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenPdfShare }) => {
                           type="button"
                           onClick={() => removeItem(item.id)}
                           aria-label={`Remove ${item.name} from bag`}
-                          className="min-w-[44px] min-h-[44px] -mt-2 -mr-2 flex items-center justify-center text-gray-400 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors"
+                          className="min-w-[40px] min-h-[40px] -mt-1 -mr-1 flex items-center justify-center text-muted hover:text-oxblood focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood transition-colors"
                         >
-                          <Trash2 className="w-4 h-4" aria-hidden="true" />
+                          <Trash2 className="w-4 h-4 stroke-[1.5]" aria-hidden="true" />
                         </button>
                       </div>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs font-sans text-muted">
                         {formatInrPrice(item.price_inr)} each
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-gold/15">
                       {/* Quantity Controls */}
-                      <div className="inline-flex items-center rounded-lg border border-gray-200 bg-white">
+                      <div className="inline-flex items-center rounded-[2px] border border-gold/40 bg-ivory">
                         <button
                           type="button"
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           aria-label={`Decrease quantity of ${item.name}`}
-                          className="min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-l-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                          className="min-w-[36px] min-h-[36px] flex items-center justify-center text-ink hover:text-oxblood transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
                         >
-                          <Minus className="w-3.5 h-3.5" aria-hidden="true" />
+                          <Minus className="w-3 h-3 stroke-[1.5]" aria-hidden="true" />
                         </button>
-                        <span className="w-8 text-center text-xs sm:text-sm font-semibold text-gray-900">
+                        <span className="w-7 text-center text-xs font-sans font-medium text-ink">
                           {item.quantity}
                         </span>
                         <button
                           type="button"
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           aria-label={`Increase quantity of ${item.name}`}
-                          className="min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-r-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                          className="min-w-[36px] min-h-[36px] flex items-center justify-center text-ink hover:text-oxblood transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
                         >
-                          <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                          <Plus className="w-3 h-3 stroke-[1.5]" aria-hidden="true" />
                         </button>
                       </div>
 
                       {/* Line Total */}
-                      <span className="font-serif font-semibold text-gray-900 text-sm sm:text-base">
+                      <span className="font-sans font-medium text-ink text-sm sm:text-base">
                         {formatInrPrice(lineTotal)}
                       </span>
                     </div>
@@ -188,32 +190,32 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenPdfShare }) => {
 
         {/* Drawer Footer */}
         {items.length > 0 && (
-          <div className="p-4 sm:p-5 border-t border-gray-100 bg-gray-50/80 space-y-3">
-            <div className="flex items-center justify-between text-base sm:text-lg">
-              <span className="font-medium text-gray-700">Subtotal</span>
-              <span className="font-serif font-bold text-gray-900 text-xl">
+          <div className="p-4 sm:p-5 border-t border-gold/30 bg-ivory space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-sans uppercase tracking-wider text-muted">Subtotal</span>
+              <span className="font-sans font-medium text-oxblood text-xl">
                 {formatInrPrice(grandTotal)}
               </span>
             </div>
 
-            <p className="text-xs text-gray-500">
-              Orders are confirmed and shared directly via WhatsApp.
+            <p className="text-[11px] font-sans text-muted">
+              Orders are generated as a PDF and shared directly on WhatsApp.
             </p>
 
             <button
               type="button"
               onClick={onOpenPdfShare}
-              className="w-full min-h-[44px] py-3 px-4 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors flex items-center justify-center gap-2 shadow-sm"
+              className="w-full min-h-[44px] py-3 px-4 rounded-[2px] bg-oxblood text-ivory hover:bg-oxblood-hover text-xs font-sans font-medium tracking-[0.15em] uppercase transition-colors shadow-xs flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
             >
-              <span>Create PDF & Share on WhatsApp</span>
-              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              <span>Create PDF</span>
+              <ArrowRight className="w-4 h-4 stroke-[1.5]" aria-hidden="true" />
             </button>
 
             <div className="flex items-center justify-center pt-1">
               <button
                 type="button"
                 onClick={clearCart}
-                className="text-xs text-gray-500 hover:text-red-600 underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 rounded p-1 transition-colors"
+                className="text-[11px] font-sans tracking-wider uppercase text-muted hover:text-oxblood transition-colors py-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
               >
                 Clear shopping bag
               </button>

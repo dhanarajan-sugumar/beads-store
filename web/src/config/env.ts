@@ -7,12 +7,16 @@ interface EnvConfig {
   supabaseUrl: string;
   supabasePublishableKey: string;
   shopName: string;
+  whatsappNumber: string | null;
+  instagramUrl: string | null;
 }
 
 function getEnvConfig(): EnvConfig {
   const rawUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
   const rawKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
   const shopName = import.meta.env.VITE_SHOP_NAME?.trim() || 'Madhis Handcrafts';
+  const rawWhatsapp = import.meta.env.VITE_WHATSAPP_NUMBER?.trim() || '+91 99447 17970';
+  const rawInstagram = import.meta.env.VITE_INSTAGRAM_URL?.trim() || null;
 
   if (!rawUrl || !rawKey) {
     const missing: string[] = [];
@@ -30,6 +34,8 @@ function getEnvConfig(): EnvConfig {
     supabaseUrl: cleanUrl,
     supabasePublishableKey: rawKey,
     shopName,
+    whatsappNumber: rawWhatsapp,
+    instagramUrl: rawInstagram,
   };
 }
 
@@ -43,6 +49,8 @@ try {
     supabaseUrl: '',
     supabasePublishableKey: '',
     shopName: 'Madhis Handcrafts',
+    whatsappNumber: '+91 99447 17970',
+    instagramUrl: null,
   };
 }
 

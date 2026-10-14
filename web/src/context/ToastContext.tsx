@@ -1,0 +1,92 @@
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useState, useCallback, useRef } from 'react';
+import { Check, ShoppingBag, X } from 'lucide-react';
+
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
+interface ToastMessage {
+  id: number;
+  text: string;
+  action?: ToastAction;
+}
+
+export interface ToastContextType {
+  showToast: (text: string, action?: ToastAction) => void;
+}
+
+export const ToastContext = createContext<ToastContextType | undefined>(undefined);
+
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [toast, setToast] = useState<ToastMessage | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const showToast = useCallback((text: string, action?: ToastAction) => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+
+    setToast({ id: Date.now(), text, action });
+
+    timerRef.current = setTimeout(() => {
+      setToast(null);
+    }, 3500);
+  }, []);
+
+  const hideToast = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    setToast(null);
+  }, []);
+
+  return (
+    <ToastContext.Provider value={{ showToast }}>
+      {children}
+
+      {/* Floating Toast notification */}
+      {toast && (
+        <aside
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[90vw] animate-in slide-in-from-bottom-5 fade-in duration-200 pointer-events-auto"
+        >
+          <div className="bg-ink/95 backdrop-blur-md text-ivory px-4 py-2.5 rounded-[2px] shadow-xl border border-gold/40 flex items-center justify-between gap-3 text-xs sm:text-sm font-sans">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-4 h-4 rounded-full border border-gold text-gold flex items-center justify-center shrink-0">
+                <Check className="w-2.5 h-2.5 stroke-[2]" />
+              </div>
+              <p className="font-normal text-ivory truncate">{toast.text}</p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {toast.action && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    toast.action?.onClick();
+                    hideToast();
+                  }}
+                  className="px-2.5 py-1 rounded-[2px] bg-oxblood hover:bg-oxblood-hover text-ivory font-medium text-[11px] tracking-wider uppercase transition-colors flex items-center gap-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-gold"
+                >
+                  <ShoppingBag className="w-3 h-3 stroke-[1.5]" />
+                  <span>{toast.action.label}</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={hideToast}
+                aria-label="Dismiss notification"
+                className="p-1 rounded-xs text-ivory/60 hover:text-ivory transition-colors"
+              >
+                <X className="w-3.5 h-3.5 stroke-[1.5]" />
+              </button>
+            </div>
+          </div>
+        </aside>
+      )}
+    </ToastContext.Provider>
+  );
+};

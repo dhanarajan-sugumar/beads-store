@@ -47,47 +47,47 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({
               return (
                 <tr key={product.id} className="hover:bg-gray-50/80 transition-colors">
                   {/* Item info with thumbnail & SKU */}
-                  <td className="px-4 py-3 flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-stone-50 overflow-hidden shrink-0 border border-gray-200 flex items-center justify-center p-0.5">
+                  <td className="px-4 py-3.5 flex items-center gap-3.5">
+                    <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-lg bg-stone-100 overflow-hidden shrink-0 border border-gray-200 shadow-2xs flex items-center justify-center">
                       {product.image_url ? (
                         <img
                           src={product.image_url}
                           alt={product.name}
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-cover"
                         />
                       ) : (
-                        <ImageOff className="w-5 h-5 text-gray-400" />
+                        <ImageOff className="w-6 h-6 text-gray-400" />
                       )}
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2 mb-1">
                         {product.sku && (
-                          <span className="font-mono text-xs font-semibold px-1.5 py-0.5 rounded bg-primary-50 text-primary-700">
+                          <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-primary-50 text-primary-700 border border-primary-200/50">
                             {product.sku}
                           </span>
                         )}
-                        <p className="font-semibold text-gray-900 truncate">{product.name}</p>
+                        <p className="font-sans font-semibold text-ink text-base truncate">{product.name}</p>
                       </div>
                       {product.description && (
-                        <p className="text-xs text-gray-500 truncate max-w-xs">{product.description}</p>
+                        <p className="text-xs text-gray-500 line-clamp-2 max-w-sm leading-relaxed">{product.description}</p>
                       )}
                     </div>
                   </td>
 
                   {/* Category */}
-                  <td className="px-4 py-3 text-xs font-medium text-gray-600 capitalize whitespace-nowrap">
-                    <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                  <td className="px-4 py-3.5 text-xs font-sans font-medium text-gray-600 capitalize whitespace-nowrap">
+                    <span className="px-2.5 py-1 rounded-full bg-stone-100 text-stone-700 border border-stone-200">
                       {product.category || 'other'}
                     </span>
                   </td>
 
                   {/* Price */}
-                  <td className="px-4 py-3 font-serif font-semibold text-gray-900 whitespace-nowrap">
+                  <td className="px-4 py-3.5 font-sans font-semibold text-base text-ink tabular-nums whitespace-nowrap">
                     {formatInrPrice(product.price_inr)}
                   </td>
 
                   {/* Sort order */}
-                  <td className="px-4 py-3 text-gray-500 font-mono text-xs">
+                  <td className="px-4 py-3.5 text-gray-500 font-mono text-xs">
                     {product.sort_order}
                   </td>
 
@@ -148,28 +148,30 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({
           const isToggling = togglingId === product.id;
           return (
             <div key={product.id} className="p-4 space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-16 h-16 rounded-lg bg-stone-50 overflow-hidden shrink-0 border border-gray-200 flex items-center justify-center p-0.5">
+              <div className="flex items-start gap-3.5">
+                <div className="w-24 h-28 rounded-lg bg-stone-100 overflow-hidden shrink-0 border border-gray-200 shadow-2xs flex items-center justify-center">
                   {product.image_url ? (
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-contain" />
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                   ) : (
                     <ImageOff className="w-6 h-6 text-gray-400" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1 mb-0.5">
+                  <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                     {product.sku && (
-                      <span className="font-mono text-[10px] font-semibold px-1.5 py-0.2 rounded bg-primary-50 text-primary-700">
+                      <span className="font-mono text-[10px] font-semibold px-2 py-0.5 rounded bg-primary-50 text-primary-700 border border-primary-200/50">
                         {product.sku}
                       </span>
                     )}
-                    <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-gray-100 text-gray-600 capitalize">
+                    <span className="text-[10px] font-sans font-medium px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 capitalize border border-stone-200">
                       {product.category || 'other'}
                     </span>
                   </div>
-                  <h3 className="font-semibold text-gray-900 text-sm line-clamp-1">{product.name}</h3>
-                  <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">{product.description}</p>
-                  <p className="font-serif font-bold text-gray-900 text-sm mt-1">
+                  <h3 className="font-sans font-semibold text-ink text-base line-clamp-2">{product.name}</h3>
+                  {product.description && (
+                    <p className="text-xs text-gray-500 line-clamp-2 mt-0.5 leading-relaxed">{product.description}</p>
+                  )}
+                  <p className="font-sans font-bold text-ink text-base tabular-nums mt-1.5">
                     {formatInrPrice(product.price_inr)}
                   </p>
                 </div>

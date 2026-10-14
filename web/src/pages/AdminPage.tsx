@@ -174,7 +174,7 @@ export const AdminPage: React.FC = () => {
             <div className="w-14 h-14 rounded-full bg-primary-50 text-primary-700 flex items-center justify-center mx-auto">
               <Lock className="w-7 h-7" aria-hidden="true" />
             </div>
-            <h1 className="font-serif font-bold text-2xl text-gray-900">
+            <h1 className="font-sans font-bold text-2xl text-gray-900">
               Admin Login
             </h1>
             <p className="text-xs text-gray-500">
@@ -271,7 +271,7 @@ export const AdminPage: React.FC = () => {
             <span className="text-xs text-gray-400">•</span>
             <span className="text-xs text-gray-500">{user.email}</span>
           </div>
-          <h1 className="text-2xl font-serif font-bold text-gray-900 mt-1">
+          <h1 className="text-2xl font-sans font-bold text-gray-900 mt-1">
             Catalogue Management
           </h1>
         </div>
@@ -299,15 +299,15 @@ export const AdminPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs">
           <p className="text-xs uppercase font-semibold text-gray-500">Total Products</p>
-          <p className="text-2xl font-serif font-bold text-gray-900 mt-1">{products.length}</p>
+          <p className="text-2xl font-sans font-bold text-gray-900 mt-1 tabular-nums">{products.length}</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs">
           <p className="text-xs uppercase font-semibold text-green-700">Active (Visible)</p>
-          <p className="text-2xl font-serif font-bold text-green-700 mt-1">{activeCount}</p>
+          <p className="text-2xl font-sans font-bold text-green-700 mt-1 tabular-nums">{activeCount}</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs">
           <p className="text-xs uppercase font-semibold text-amber-700">Hidden (Draft/Inactive)</p>
-          <p className="text-2xl font-serif font-bold text-amber-700 mt-1">{hiddenCount}</p>
+          <p className="text-2xl font-sans font-bold text-amber-700 mt-1 tabular-nums">{hiddenCount}</p>
         </div>
       </div>
 

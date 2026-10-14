@@ -215,7 +215,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     >
       <div className="relative bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-gray-100 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-100">
-          <h2 id="product-form-title" className="text-xl font-serif font-bold text-gray-900">
+          <h2 id="product-form-title" className="text-xl font-sans font-bold text-gray-900">
             {isEdit ? 'Edit Product' : 'Add New Product'}
           </h2>
           <button

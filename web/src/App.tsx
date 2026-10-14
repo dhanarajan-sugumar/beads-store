@@ -5,6 +5,7 @@ import { HomePage } from '@/pages/HomePage';
 import { AdminPage } from '@/pages/AdminPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
 import { useCart } from '@/hooks/useCart';
 import { CartDrawer } from '@/components/cart/CartDrawer';
 import { OrderShareModal } from '@/components/cart/OrderShareModal';
@@ -49,7 +50,9 @@ const AppContent: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <CartProvider>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </CartProvider>
   );
 };

@@ -48,7 +48,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
         <div className="flex items-center justify-between border-b border-gray-100 pb-3">
           <div className="flex items-center gap-2 text-red-600">
             <AlertTriangle className="w-5 h-5" aria-hidden="true" />
-            <h2 id="delete-modal-title" className="font-serif font-bold text-lg text-gray-900">
+            <h2 id="delete-modal-title" className="font-sans font-bold text-lg text-gray-900">
               Confirm Deletion
             </h2>
           </div>
