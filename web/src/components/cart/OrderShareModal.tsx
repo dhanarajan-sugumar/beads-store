@@ -77,13 +77,6 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
   const whatsAppText = buildWhatsAppOrderMessage(env.shopName, items, grandTotal, orderRef);
   const whatsAppUrl = getWhatsAppShareUrl(whatsAppText);
 
-  const handleWhatsAppClick = () => {
-    // If user hasn't downloaded yet, trigger download automatically so they have the file ready
-    if (!downloaded) {
-      downloadPdfFile();
-    }
-  };
-
   return (
     <div
       className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
@@ -100,7 +93,7 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
         <div className="flex items-start justify-between border-b border-gray-100 pb-4">
           <div>
             <h2 id="share-modal-title" className="font-serif font-bold text-2xl text-gray-900">
-              Share Order on WhatsApp
+              Share or Download Order
             </h2>
             <p className="text-xs text-gray-500 mt-1">
               Order Reference: <span className="font-mono font-semibold text-primary-700">{orderRef}</span>
@@ -120,27 +113,57 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
         {generating ? (
           <div className="py-12 flex flex-col items-center justify-center space-y-3 text-center">
             <Loader2 className="w-9 h-9 text-primary-600 animate-spin" />
-            <p className="font-medium text-gray-900 text-sm">Generating your order PDF...</p>
+            <p className="font-medium text-gray-900 text-sm">Preparing your order summary & PDF...</p>
             <p className="text-xs text-gray-500">Compiling items, photos, and prices.</p>
           </div>
         ) : (
-          <div className="space-y-5">
-            {/* Order status card */}
-            <div className="p-4 rounded-xl bg-primary-50/70 border border-primary-100 flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 text-primary-600 shrink-0 mt-0.5" />
-              <div className="text-xs sm:text-sm text-gray-700 space-y-1">
-                <p className="font-semibold text-gray-900">Order document prepared for {env.shopName}</p>
-                <p className="text-gray-600">
-                  Follow these 2 quick steps to place your order directly via WhatsApp:
+          <div className="space-y-4">
+            <p className="text-xs sm:text-sm text-gray-600">
+              Choose how you would like to proceed with your order for <span className="font-semibold text-gray-900">{env.shopName}</span>:
+            </p>
+
+            {/* Choice 1: WhatsApp (Recommended) */}
+            <div className="p-4 rounded-xl border-2 border-green-500 bg-green-50/50 space-y-2.5 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-green-800 bg-green-100 px-2 py-0.5 rounded">
+                  Option 1 (Recommended)
+                </span>
+                <span className="text-xs text-green-700 font-medium">Fastest</span>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">
+                  Send Order directly on WhatsApp
+                </p>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Opens WhatsApp with all your items, prices, and reference number pre-filled.
                 </p>
               </div>
+              <a
+                href={whatsAppUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full min-h-[44px] px-4 py-3 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                <MessageCircle className="w-5 h-5" aria-hidden="true" />
+                <span>Open WhatsApp & Send Order</span>
+                <ArrowRight className="w-4 h-4 ml-1" aria-hidden="true" />
+              </a>
             </div>
 
-            {/* Step 1: Download PDF */}
-            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50/50 space-y-2">
+            {/* Visual Divider */}
+            <div className="relative flex py-1 items-center">
+              <div className="flex-grow border-t border-gray-200"></div>
+              <span className="shrink-0 mx-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                OR
+              </span>
+              <div className="flex-grow border-t border-gray-200"></div>
+            </div>
+
+            {/* Choice 2: Download PDF */}
+            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50/60 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Step 1
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-600 bg-gray-200 px-2 py-0.5 rounded">
+                  Option 2
                 </span>
                 {downloaded && (
                   <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
@@ -149,9 +172,14 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
                   </span>
                 )}
               </div>
-              <p className="text-sm font-medium text-gray-900">
-                Download your order PDF with product photos & item list
-              </p>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">
+                  Download Order PDF Receipt
+                </p>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Save a printable A4 order document with product photos, descriptions, and grand total.
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={downloadPdfFile}
@@ -164,33 +192,6 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
                 <FileDown className="w-4 h-4" aria-hidden="true" />
                 <span>{downloaded ? 'Download PDF Again' : 'Download Order PDF'}</span>
               </button>
-            </div>
-
-            {/* Step 2: Open WhatsApp */}
-            <div className="p-4 rounded-xl border border-green-200 bg-green-50/40 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-green-700">
-                  Step 2
-                </span>
-              </div>
-              <p className="text-sm font-medium text-gray-900">
-                Send your order breakdown directly to Madhis Handcrafts on WhatsApp
-              </p>
-              <a
-                href={whatsAppUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleWhatsAppClick}
-                className="w-full min-h-[44px] px-4 py-3 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 transition-colors flex items-center justify-center gap-2 shadow-sm"
-              >
-                <MessageCircle className="w-5 h-5" aria-hidden="true" />
-                <span>Open WhatsApp & Send Order</span>
-                <ArrowRight className="w-4 h-4 ml-1" aria-hidden="true" />
-              </a>
-            </div>
-
-            <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
-              💡 <span className="font-semibold text-gray-700">How order sharing works:</span> Clicking the button above opens WhatsApp with your complete order breakdown and Order Reference pre-filled. You can also download the PDF document above as your official receipt or share it in the chat if desired!
             </div>
           </div>
         )}
