@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-14
+### Added
+- Persistent shopping cart state in React via `CartContext` and `useCart`.
+- Safe `localStorage` utility `cartStorage.ts` with error resilience against blocked storage/private browsing.
+- Accessible off-canvas `CartDrawer` with keyboard dismissal, focus management, and touch targets >= 44px.
+- Real-time line item quantity increment/decrement controls, line totals, and grand total.
+- Dynamic cart count badge in the Header.
+- Comprehensive unit test suite for cart persistence and error edge cases.
+
 ## [0.2.0] - 2026-10-14
 ### Added
 - Responsive product catalogue grid (2 columns on mobile, 3 on tablet, 4 on desktop).
