@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-14
+### Added
+- Protected `/admin` management portal with Supabase Auth (email/password).
+- Database-level authorization via `is_admin()` RPC; unauthorized users are cleanly rejected and signed out.
+- Product CRUD operations: Create, Read, Update, Delete with confirmation modal, and 1-click active/hidden toggle.
+- In-browser WebP image compressor (`imageCompressor.ts`, max 1200px, quality 0.85, <= 200KB) with Supabase Storage upload to `product-images` bucket.
+- Storefront category filter pills (`All`, `Necklaces`, `Bracelets`, `Other`) with live item count badges.
+- System-generated SKU format (`NL-`, `BR-`, `OT-`) mapped to product categories with auto-generation and manual override.
+- Synchronized SKU display across product cards, detail modal, cart drawer, PDF order documents, and WhatsApp order messages.
+- Full-screen lightbox image viewer on dark backdrop with ESC dismissal.
+- Restored uniform edge-to-edge card tiles on catalogue grid while preserving uncropped views in modal.
+- Supabase migration `0002_add_sku_and_category.sql` for category & SKU indexing and backfill.
+
 ## [0.4.0] - 2026-10-14
 ### Added
 - Browser-side A4 PDF order document generation using `jsPDF` with item photos and totals.
