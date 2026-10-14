@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-14
+### Added
+- Responsive product catalogue grid (2 columns on mobile, 3 on tablet, 4 on desktop).
+- Supabase live data hook `useProducts` querying active items with RLS.
+- Accessible `ProductCard` component with INR pricing, lazy loading, and broken image fallbacks.
+- Shimmer pulse loading skeleton `ProductSkeleton`.
+- Empty and error states with a retry mechanism.
+- Full product detail modal (`ProductDetailModal`) with accessibility (ESC key, focus trapping, backdrop dismiss).
+
 ## [0.1.0] - 2026-10-14
 ### Added
 - Monorepo structure with `/web`, `/supabase`, `/docs`, `/mobile`.
