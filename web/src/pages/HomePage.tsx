@@ -35,12 +35,12 @@ export const HomePage: React.FC<HomePageProps> = ({ onAddToCart }) => {
   }, [products, selectedCategory]);
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div>
       {/* Configuration check notice if env is missing */}
       {!isEnvConfigured && (
         <div
           role="alert"
-          className="rounded-xs border border-amber-300 bg-amber-50/80 p-4 text-amber-900 flex items-start gap-3"
+          className="rounded-xs border border-amber-300 bg-amber-50/80 p-4 text-amber-900 flex items-start gap-3 mb-4"
         >
           <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
           <div className="text-sm font-sans">
@@ -55,8 +55,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onAddToCart }) => {
       )}
 
       {/* Quiet-Luxury Intro */}
-      <section className="text-center py-4 sm:py-6">
-        <p className="text-[10px] sm:text-[11px] font-sans font-medium tracking-[0.2em] uppercase text-gold mb-1.5 select-none">
+      <section className="text-center pt-1 pb-3 sm:pt-2 sm:pb-4">
+        <p className="text-[10px] sm:text-[11px] font-sans font-medium tracking-[0.22em] uppercase text-gold mb-1 select-none">
           HANDMADE BEAD JEWELLERY
         </p>
         <h1 className="font-serif italic font-normal text-2xl sm:text-3xl md:text-4xl text-ink leading-tight">

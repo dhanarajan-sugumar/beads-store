@@ -29,7 +29,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   return (
     <nav
       aria-label="Product categories"
-      className="sticky top-16 sm:top-20 z-20 bg-ivory/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-gold/25 mb-6 sm:mb-8 transition-all"
+      className="sticky top-16 sm:top-20 z-20 bg-ivory/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-gold/25 mb-4 sm:mb-6 transition-all"
     >
       <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto pb-px no-scrollbar sm:justify-center">
         {categories.map((cat) => {

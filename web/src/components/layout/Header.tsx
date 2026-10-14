@@ -19,18 +19,17 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Left spacer to perfectly balance the right cart button */}
           <div className="w-11 shrink-0" aria-hidden="true" />
 
-          {/* Centred Wordmark with 'M' monogram */}
+          {/* Centred Wordmark with Official Logo */}
           <Link
             to="/"
             className="flex items-center justify-center gap-2.5 sm:gap-3 group focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood rounded-xs py-1 transition-opacity hover:opacity-90"
             aria-label={`${env.shopName} home page`}
           >
-            <div
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gold flex items-center justify-center font-serif text-xs sm:text-sm font-normal text-gold select-none transition-colors"
-              aria-hidden="true"
-            >
-              M
-            </div>
+            <img
+              src="/logo.png"
+              alt="Madhis Handcrafts Logo"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-contain shrink-0 shadow-2xs"
+            />
             <span className="font-serif font-light text-[24px] sm:text-[28px] md:text-[32px] tracking-[0.03em] text-ink transition-colors">
               {env.shopName}
             </span>
