@@ -18,7 +18,7 @@ interface CartContextType {
   isCartOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
-  addItem: (product: Product, quantity?: number) => void;
+  addItem: (product: Product, quantity?: number, openDrawer?: boolean) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -38,7 +38,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const openCart = useCallback(() => setIsCartOpen(true), []);
   const closeCart = useCallback(() => setIsCartOpen(false), []);
 
-  const addItem = useCallback((product: Product, quantity = 1) => {
+  const addItem = useCallback((product: Product, quantity = 1, openDrawer = false) => {
     setItems((prevItems) => {
       const existingIndex = prevItems.findIndex((item) => item.id === product.id);
       if (existingIndex > -1) {
@@ -59,7 +59,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
       return [...prevItems, newItem];
     });
-    setIsCartOpen(true);
+    if (openDrawer) {
+      setIsCartOpen(true);
+    }
   }, []);
 
   const removeItem = useCallback((productId: string) => {
