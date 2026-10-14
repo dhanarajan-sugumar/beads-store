@@ -75,7 +75,7 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
   };
 
   const whatsAppText = buildWhatsAppOrderMessage(env.shopName, items, grandTotal, orderRef);
-  const whatsAppUrl = getWhatsAppShareUrl(whatsAppText);
+  const whatsAppUrl = getWhatsAppShareUrl(whatsAppText, env.whatsappNumber || undefined);
 
   return (
     <div
@@ -131,11 +131,14 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
                 <span className="text-xs font-sans text-muted font-normal">Instant</span>
               </div>
               <div>
-                <p className="text-sm font-sans font-medium text-ink">
-                  Send Order directly on WhatsApp
+                <p className="text-sm font-sans font-medium text-ink flex items-center justify-between">
+                  <span>Send Order directly on WhatsApp</span>
+                  {env.whatsappNumber && (
+                    <span className="text-[11px] font-sans text-muted font-normal">{env.whatsappNumber}</span>
+                  )}
                 </p>
                 <p className="text-xs font-sans text-muted mt-0.5">
-                  Opens WhatsApp with all your items, prices, and reference number pre-filled.
+                  Opens WhatsApp chat directly with {env.shopName} with your items, prices, and reference number pre-filled.
                 </p>
               </div>
               <a
