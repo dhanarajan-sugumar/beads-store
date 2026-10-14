@@ -174,10 +174,10 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-900">
-                  Download Order PDF Receipt
+                  Download Order PDF & Send to us on WhatsApp
                 </p>
                 <p className="text-xs text-gray-600 mt-0.5">
-                  Save a printable A4 order document with product photos, descriptions, and grand total.
+                  Save a printable A4 order document with product photos, descriptions, and grand total, and send it to our WhatsApp to place your order.
                 </p>
               </div>
               <button
@@ -190,7 +190,7 @@ export const OrderShareModal: React.FC<OrderShareModalProps> = ({ isOpen, onClos
                 }`}
               >
                 <FileDown className="w-4 h-4" aria-hidden="true" />
-                <span>{downloaded ? 'Download PDF Again' : 'Download Order PDF'}</span>
+                <span>{downloaded ? 'PDF Downloaded (Click to download again)' : 'Download Order PDF'}</span>
               </button>
             </div>
           </div>
