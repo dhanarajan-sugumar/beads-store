@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { HomePage } from '@/pages/HomePage';
@@ -6,9 +6,11 @@ import { NotFoundPage } from '@/pages/NotFoundPage';
 import { CartProvider } from '@/context/CartContext';
 import { useCart } from '@/hooks/useCart';
 import { CartDrawer } from '@/components/cart/CartDrawer';
+import { OrderShareModal } from '@/components/cart/OrderShareModal';
 
 const AppContent: React.FC = () => {
   const { itemCount, openCart, addItem } = useCart();
+  const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
 
   return (
     <>
@@ -27,7 +29,12 @@ const AppContent: React.FC = () => {
           </Route>
         </Routes>
       </BrowserRouter>
-      <CartDrawer />
+
+      <CartDrawer onOpenPdfShare={() => setIsShareModalOpen(true)} />
+      <OrderShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+      />
     </>
   );
 };

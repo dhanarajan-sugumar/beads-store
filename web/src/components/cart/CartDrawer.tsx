@@ -195,16 +195,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenPdfShare }) => {
 
             <button
               type="button"
-              onClick={() => {
-                if (onOpenPdfShare) {
-                  onOpenPdfShare();
-                } else {
-                  alert('PDF Export & WhatsApp share will be available in the next feature step (feature/pdf-share).');
-                }
-              }}
+              onClick={onOpenPdfShare}
               className="w-full min-h-[44px] py-3 px-4 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors flex items-center justify-center gap-2 shadow-sm"
             >
-              <span>Create Order (PDF / WhatsApp)</span>
+              <span>Create PDF & Share on WhatsApp</span>
               <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </button>
 
