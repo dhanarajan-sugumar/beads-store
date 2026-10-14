@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-14
+### Added
+- Browser-side A4 PDF order document generation using `jsPDF` with item photos and totals.
+- Synchronized unique Order Reference code (e.g. `MH-779654`) across PDF and WhatsApp messages.
+- WhatsApp message builder for instant 1-click order transmission.
+- Dedicated `OrderShareModal` presenting clear alternatives: direct WhatsApp order transmission OR A4 PDF document download.
+- Automatic closing of the Cart Drawer when launching the share dialog to eliminate visual overlap.
+
 ## [0.3.0] - 2026-10-14
 ### Added
 - Persistent shopping cart state in React via `CartContext` and `useCart`.
