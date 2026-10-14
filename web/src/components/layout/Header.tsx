@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Sparkles } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 import { env } from '@/config/env';
 
 interface HeaderProps {
@@ -13,35 +13,41 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCart,
 }) => {
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gold-200/60 shadow-2xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo / Shop Title */}
+    <header className="sticky top-0 z-30 bg-ivory/95 backdrop-blur-md border-b border-gold/40">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-20">
+          {/* Left spacer to perfectly balance the right cart button */}
+          <div className="w-11 shrink-0" aria-hidden="true" />
+
+          {/* Centred Wordmark with 'M' monogram */}
           <Link
             to="/"
-            className="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 rounded-md p-1"
+            className="flex items-center justify-center gap-2.5 sm:gap-3 group focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood rounded-xs py-1 transition-opacity hover:opacity-90"
             aria-label={`${env.shopName} home page`}
           >
-            <div className="w-8 h-8 rounded-full bg-gold-50 border border-gold-300 flex items-center justify-center text-gold-600 shadow-2xs group-hover:scale-105 transition-transform">
-              <Sparkles className="w-4 h-4 text-gold-600" />
+            <div
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gold flex items-center justify-center font-serif text-xs sm:text-sm font-normal text-gold select-none transition-colors"
+              aria-hidden="true"
+            >
+              M
             </div>
-            <span className="text-xl sm:text-2xl font-serif font-bold tracking-tight text-stone-900 group-hover:text-primary-700 transition-colors">
+            <span className="font-serif font-light text-[24px] sm:text-[28px] md:text-[32px] tracking-[0.03em] text-ink transition-colors">
               {env.shopName}
             </span>
           </Link>
 
-          {/* Action buttons (Cart, Admin Link) */}
-          <div className="flex items-center gap-2">
+          {/* Cart Icon with Oxblood Count Badge */}
+          <div className="w-11 shrink-0 flex items-center justify-end">
             <button
               type="button"
               onClick={onOpenCart}
-              className="relative min-w-[44px] min-h-[44px] flex items-center justify-center p-2 rounded-full text-stone-700 hover:text-primary-700 hover:bg-gold-50/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors"
+              className="relative min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-ink hover:text-oxblood focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood transition-colors"
               aria-label={`Shopping bag with ${cartItemCount} items`}
             >
-              <ShoppingBag className="w-6 h-6" aria-hidden="true" />
+              <ShoppingBag className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
               {cartItemCount > 0 && (
                 <span
-                  className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs font-bold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center shadow-xs animate-in zoom-in-50 duration-150"
+                  className="absolute top-1 right-1 bg-oxblood text-ivory text-[10px] font-sans font-medium rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center shadow-xs animate-in zoom-in-50 duration-150"
                   aria-hidden="true"
                 >
                   {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -54,3 +60,4 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+

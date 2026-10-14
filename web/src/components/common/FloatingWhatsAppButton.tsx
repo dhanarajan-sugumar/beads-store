@@ -18,13 +18,11 @@ export const FloatingWhatsAppButton: React.FC = () => {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat with us on WhatsApp"
-        className="group min-w-[50px] min-h-[50px] p-3 rounded-full bg-[#25D366] hover:bg-[#20BA5A] text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2"
+        className="group min-w-[44px] min-h-[44px] w-11 h-11 rounded-full bg-[#2E7D32]/90 hover:bg-[#2E7D32] text-ivory shadow-xs hover:shadow-sm hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center focus:outline-none focus-visible:ring-1 focus-visible:ring-gold"
       >
-        <MessageCircle className="w-6 h-6 fill-current" aria-hidden="true" />
-        <span className="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out text-xs font-semibold pl-0 group-hover:pl-2">
-          Chat on WhatsApp
-        </span>
+        <MessageCircle className="w-5 h-5 fill-current stroke-none" aria-hidden="true" />
       </a>
     </aside>
   );
 };
+

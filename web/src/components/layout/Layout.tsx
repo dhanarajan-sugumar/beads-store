@@ -14,9 +14,9 @@ export const Layout: React.FC<LayoutProps> = ({
   onOpenCart,
 }) => {
   return (
-    <div className="flex flex-col min-h-screen bg-ivory text-stone-900">
+    <div className="flex flex-col min-h-screen bg-ivory text-ink">
       <Header cartItemCount={cartItemCount} onOpenCart={onOpenCart} />
-      <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-6">
+      <main id="main-content" className="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16">
         <Outlet />
       </main>
       <Footer />
