@@ -22,15 +22,15 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Centred Wordmark with Official Logo */}
           <Link
             to="/"
-            className="flex items-center justify-center gap-2.5 sm:gap-3 group focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood rounded-xs py-1 transition-opacity hover:opacity-90"
+            className="flex items-center justify-center gap-2 sm:gap-3 group focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood rounded-xs py-1 transition-opacity hover:opacity-90"
             aria-label={`${env.shopName} home page`}
           >
             <img
               src="/logo.png"
               alt="Madhis Handcrafts Logo"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-contain shrink-0 shadow-2xs"
+              className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full object-contain shrink-0 shadow-xs"
             />
-            <span className="font-serif font-light text-[24px] sm:text-[28px] md:text-[32px] tracking-[0.03em] text-ink transition-colors">
+            <span className="font-serif font-light text-[21px] sm:text-[28px] md:text-[32px] tracking-[0.02em] text-ink transition-colors whitespace-nowrap">
               {env.shopName}
             </span>
           </Link>

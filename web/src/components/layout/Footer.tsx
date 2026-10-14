@@ -13,12 +13,7 @@ export const Footer: React.FC = () => {
     <footer className="bg-dark text-ivory mt-auto border-t border-gold/30">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="flex flex-col items-center text-center space-y-3">
-          {/* Brand Logo & Wordmark in Cormorant */}
-          <img
-            src="/logo.png"
-            alt="Madhis Handcrafts Logo"
-            className="w-12 h-12 rounded-full object-contain bg-ivory/10 p-0.5 border border-gold/40 shadow-xs mb-0.5"
-          />
+          {/* Wordmark in Cormorant */}
           <p className="font-serif font-light text-2xl sm:text-3xl text-ivory tracking-[0.03em]">
             {env.shopName}
           </p>
