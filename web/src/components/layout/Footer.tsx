@@ -11,30 +11,25 @@ export const Footer: React.FC = () => {
 
   return (
     <footer className="bg-dark text-ivory mt-auto border-t border-gold/30">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <div className="flex flex-col items-center text-center space-y-3">
-          {/* Wordmark in Cormorant */}
-          <p className="font-serif font-light text-2xl sm:text-3xl text-ivory tracking-[0.03em]">
-            {env.shopName}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-7">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-sans">
+          {/* Left: Copyright */}
+          <p className="text-[11px] text-ivory/50 order-2 sm:order-1">
+            © {currentYear} {env.shopName}. All rights reserved.
           </p>
 
-          {/* Italic tagline */}
-          <p className="font-serif italic text-sm sm:text-base text-ivory/80 max-w-md">
-            Handmade, each piece unique. Custom orders welcome.
-          </p>
-
-          {/* Social and WhatsApp Links */}
+          {/* Center: Social and WhatsApp Links (if present) */}
           {(whatsappNumber || instagramUrl) && (
-            <div className="flex flex-wrap items-center justify-center gap-6 pt-3 text-xs tracking-wider uppercase font-sans">
+            <div className="flex items-center gap-6 text-[11px] tracking-wider uppercase order-1 sm:order-2">
               {whatsappNumber && (
                 <a
                   href={`https://wa.me/${cleanNumber}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-ivory/80 hover:text-gold transition-colors flex items-center gap-1.5 min-h-[44px] focus:outline-none focus-visible:ring-1 focus-visible:ring-gold"
+                  className="text-ivory/70 hover:text-gold transition-colors flex items-center gap-1.5 min-h-[44px] focus:outline-none focus-visible:ring-1 focus-visible:ring-gold"
                 >
                   <MessageCircle className="w-3.5 h-3.5 text-gold stroke-[1.5]" />
-                  <span>WhatsApp {whatsappNumber}</span>
+                  <span>WhatsApp</span>
                 </a>
               )}
 
@@ -43,7 +38,7 @@ export const Footer: React.FC = () => {
                   href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-ivory/80 hover:text-gold transition-colors flex items-center gap-1.5 min-h-[44px] focus:outline-none focus-visible:ring-1 focus-visible:ring-gold"
+                  className="text-ivory/70 hover:text-gold transition-colors flex items-center gap-1.5 min-h-[44px] focus:outline-none focus-visible:ring-1 focus-visible:ring-gold"
                 >
                   <Instagram className="w-3.5 h-3.5 text-gold stroke-[1.5]" />
                   <span>Instagram</span>
@@ -51,20 +46,10 @@ export const Footer: React.FC = () => {
               )}
             </div>
           )}
-        </div>
 
-        {/* Thin Gold Divider */}
-        <div className="border-t border-gold/30 my-8 sm:my-10" />
-
-        {/* Bottom copyright and Admin link */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-sans text-ivory/50">
-          <p>© {currentYear} {env.shopName}. All rights reserved.</p>
-
-          <div className="flex items-center gap-4">
-            <Link
-              to="/"
-              className="hover:text-gold transition-colors py-1"
-            >
+          {/* Right: Quick Links */}
+          <div className="flex items-center gap-3 text-[11px] text-ivory/50 order-3">
+            <Link to="/" className="hover:text-gold transition-colors py-1">
               Catalogue
             </Link>
             <span>•</span>
