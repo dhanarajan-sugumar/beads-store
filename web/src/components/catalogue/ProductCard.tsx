@@ -57,95 +57,89 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <article
       onClick={handleCardClick}
-      className="group bg-white rounded-2xl overflow-hidden border border-gold-200/70 shadow-2xs hover:shadow-md hover:border-gold-300 transition-all duration-200 flex flex-col cursor-pointer focus-within:ring-2 focus-within:ring-primary-600"
+      className="group flex flex-col cursor-pointer focus-within:ring-1 focus-within:ring-oxblood animate-fade-up"
     >
-      {/* 1:1 Square Image Crop with subtle hover zoom */}
-      <div className="relative w-full aspect-square bg-stone-100 overflow-hidden">
+      {/* 4:5 Portrait Image Crop with slow hover zoom (scale 1.04, 600ms) */}
+      <div className="relative w-full aspect-[4/5] bg-stone-100/60 overflow-hidden rounded-[2px]">
         {product.image_url && !imageError ? (
           <img
             src={product.image_url}
             alt={product.name}
             loading="lazy"
             onError={() => setImageError(true)}
-            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover object-center group-hover:scale-[1.04] transition-transform duration-[600ms] ease-out"
           />
         ) : (
           <div
-            className="w-full h-full flex flex-col items-center justify-center bg-stone-50 text-stone-400 p-4 text-center"
+            className="w-full h-full flex flex-col items-center justify-center bg-stone-100/40 text-muted p-4 text-center"
             aria-label="No image available"
           >
-            <ImageOff className="w-8 h-8 mb-1" aria-hidden="true" />
-            <span className="text-xs">No image</span>
+            <ImageOff className="w-6 h-6 mb-1 text-muted/60 stroke-[1.5]" aria-hidden="true" />
+            <span className="text-[11px] font-sans tracking-wider uppercase text-muted">No image</span>
           </div>
         )}
 
-        {/* Quick view overlay hint on desktop */}
-        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex items-center justify-center pointer-events-none">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 text-stone-900 text-xs font-semibold shadow-md backdrop-blur-xs">
-            <Eye className="w-3.5 h-3.5" aria-hidden="true" />
-            View Details
+        {/* Subtle quick view label on desktop hover */}
+        <div className="absolute inset-0 bg-ink/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex items-center justify-center pointer-events-none">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-ivory/95 text-ink text-[11px] font-sans tracking-[0.1em] uppercase shadow-xs">
+            <Eye className="w-3 h-3 stroke-[1.5]" aria-hidden="true" />
+            View
           </span>
         </div>
       </div>
 
       {/* Card Content */}
-      <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between">
+      <div className="pt-3.5 pb-1 flex-1 flex flex-col justify-between">
         <div>
-          {/* Muted SKU Chip */}
+          {/* Tiny muted SKU with no pill/background */}
           {product.sku && (
-            <span className="inline-block text-[10px] font-mono font-medium tracking-wider text-stone-500 bg-stone-100 border border-stone-200/60 px-2 py-0.5 rounded-full mb-1.5">
+            <span className="text-[11px] font-sans tracking-[0.12em] text-muted block mb-1 uppercase">
               {product.sku}
             </span>
           )}
 
-          {/* Larger Product Name */}
+          {/* Product Name in Cormorant 20px regular */}
           <h3
-            className="font-serif font-bold text-stone-900 text-sm sm:text-base leading-snug line-clamp-2 group-hover:text-primary-700 transition-colors"
+            className="font-serif font-normal text-ink text-[18px] sm:text-[20px] leading-snug line-clamp-2 group-hover:text-oxblood transition-colors duration-200"
             title={product.name}
           >
             {product.name}
           </h3>
 
-          {product.description && (
-            <p className="text-xs text-stone-500 line-clamp-1 mt-1">
-              {product.description}
-            </p>
-          )}
+          {/* Price in Jost 15px oxblood */}
+          <div className="mt-1.5">
+            <span className="font-sans font-medium text-oxblood text-[15px]">
+              {formatInrPrice(product.price_inr)}
+            </span>
+          </div>
         </div>
 
-        {/* Bottom Bar: Bold Crimson Price & Add / Stepper Controls */}
-        <div className="mt-3 pt-2.5 border-t border-gold-100 flex items-center justify-between gap-2">
-          <span className="font-serif font-bold text-primary-700 text-base sm:text-lg">
-            {formatInrPrice(product.price_inr)}
-          </span>
-
+        {/* Action Button: Add to order or Stepper */}
+        <div className="mt-2.5">
           {quantityInCart === 0 ? (
-            /* Add button (>= 44px touch target) */
             <button
               type="button"
               onClick={handleAddClick}
-              aria-label={`Add ${product.name} to bag`}
-              className="min-h-[44px] min-w-[44px] px-3.5 py-2 rounded-xl bg-primary-50 text-primary-700 hover:bg-primary-600 hover:text-white border border-primary-200/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors flex items-center justify-center gap-1 text-xs font-bold"
+              aria-label={`Add ${product.name} to order`}
+              className="w-full min-h-[44px] px-3 py-2 rounded-[2px] border border-oxblood text-oxblood hover:bg-oxblood hover:text-ivory text-[12px] font-sans font-medium tracking-[0.15em] uppercase transition-colors duration-300 flex items-center justify-center focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
             >
-              <Plus className="w-4 h-4" aria-hidden="true" />
-              <span>Add</span>
+              Add to order
             </button>
           ) : (
-            /* Quantity Stepper (>= 44px touch target for each button) */
             <div
-              className="inline-flex items-center rounded-xl border border-primary-300 bg-primary-50/80 shadow-2xs"
+              className="w-full min-h-[44px] rounded-[2px] border border-oxblood/80 flex items-center justify-between px-1"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 type="button"
                 onClick={handleDecrement}
                 aria-label={`Decrease quantity of ${product.name}`}
-                className="min-w-[40px] min-h-[44px] flex items-center justify-center text-primary-800 hover:bg-primary-200/50 rounded-l-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                className="min-w-[40px] min-h-[44px] flex items-center justify-center text-oxblood hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
               >
                 <Minus className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
               <span
-                className="px-2 font-serif font-bold text-xs sm:text-sm text-primary-900 min-w-[24px] text-center"
+                className="font-sans font-medium text-xs sm:text-sm text-ink px-2 min-w-[24px] text-center"
                 aria-label={`Current quantity: ${quantityInCart}`}
               >
                 {quantityInCart}
@@ -154,7 +148,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 type="button"
                 onClick={handleIncrement}
                 aria-label={`Increase quantity of ${product.name}`}
-                className="min-w-[40px] min-h-[44px] flex items-center justify-center text-primary-800 hover:bg-primary-200/50 rounded-r-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                className="min-w-[40px] min-h-[44px] flex items-center justify-center text-oxblood hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
               >
                 <Plus className="w-3.5 h-3.5" aria-hidden="true" />
               </button>

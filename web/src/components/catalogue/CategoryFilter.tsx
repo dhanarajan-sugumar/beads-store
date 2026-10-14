@@ -29,9 +29,9 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   return (
     <nav
       aria-label="Product categories"
-      className="sticky top-16 z-20 bg-ivory/95 backdrop-blur-md py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-gold-200/50 mb-4 transition-all"
+      className="sticky top-16 sm:top-20 z-20 bg-ivory/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-gold/25 mb-6 sm:mb-8 transition-all"
     >
-      <div className="flex items-center gap-2 overflow-x-auto pb-0.5 no-scrollbar sm:flex-wrap">
+      <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto pb-px no-scrollbar sm:justify-center">
         {categories.map((cat) => {
           const isSelected = selectedCategory === cat.id;
           return (
@@ -40,22 +40,24 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
               type="button"
               onClick={() => onSelectCategory(cat.id)}
               aria-pressed={isSelected}
-              className={`min-h-[44px] px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-150 whitespace-nowrap flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 ${
+              className={`min-h-[44px] py-3 px-1 relative text-[11px] sm:text-xs font-sans tracking-[0.18em] uppercase transition-colors whitespace-nowrap flex items-center gap-1.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood ${
                 isSelected
-                  ? 'bg-primary-600 text-white shadow-xs'
-                  : 'bg-white text-stone-700 border border-gold-200/70 hover:bg-gold-50/50 hover:border-gold-300'
+                  ? 'text-ink font-medium'
+                  : 'text-muted hover:text-ink'
               }`}
             >
               <span>{cat.label}</span>
-              <span
-                className={`text-[11px] px-1.5 py-0.2 rounded-full font-semibold ${
-                  isSelected
-                    ? 'bg-primary-700/90 text-white'
-                    : 'bg-gold-100 text-gold-800'
-                }`}
-              >
-                {cat.count}
+              <span className="text-[10px] sm:text-[11px] tracking-normal font-sans text-muted">
+                ({cat.count})
               </span>
+
+              {/* 1px gold underline for active tab */}
+              {isSelected && (
+                <span
+                  className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-gold"
+                  aria-hidden="true"
+                />
+              )}
             </button>
           );
         })}
@@ -63,3 +65,4 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
     </nav>
   );
 };
+
