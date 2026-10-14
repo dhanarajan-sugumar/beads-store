@@ -32,15 +32,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       onClick={handleCardClick}
       className="group bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col cursor-pointer focus-within:ring-2 focus-within:ring-primary-600"
     >
-      {/* Image container - object-contain so necklace / jewellery pieces are completely visible */}
-      <div className="relative w-full aspect-square bg-stone-50 overflow-hidden flex items-center justify-center p-2">
+      {/* Image container - uniform edge-to-edge full bleed tile */}
+      <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
         {product.image_url && !imageError ? (
           <img
             src={product.image_url}
             alt={product.name}
             loading="lazy"
             onError={() => setImageError(true)}
-            className="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-300 drop-shadow-2xs"
+            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
           <div
@@ -65,7 +65,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between">
         <div>
           {product.sku && (
-            <span className="inline-block text-[11px] font-semibold tracking-wider text-primary-700 bg-primary-50 px-2 py-0.5 rounded mb-1">
+            <span className="inline-block text-[11px] font-semibold tracking-wider text-primary-700 bg-primary-50 px-2 py-0.5 rounded mb-1 font-mono">
               {product.sku}
             </span>
           )}
