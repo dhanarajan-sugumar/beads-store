@@ -21,7 +21,7 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({
   if (products.length === 0) {
     return (
       <div className="bg-white rounded-xl p-8 border border-gray-200 text-center text-gray-500">
-        No products found. Click "Add Product" above to create your first catalogue item!
+        No products found matching criteria.
       </div>
     );
   }
@@ -34,6 +34,7 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({
           <thead className="bg-gray-50 text-xs uppercase font-semibold text-gray-500 border-b border-gray-200">
             <tr>
               <th scope="col" className="px-4 py-3.5">Item</th>
+              <th scope="col" className="px-4 py-3.5">Category</th>
               <th scope="col" className="px-4 py-3.5">Price</th>
               <th scope="col" className="px-4 py-3.5">Sort</th>
               <th scope="col" className="px-4 py-3.5">Status</th>
@@ -45,25 +46,39 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({
               const isToggling = togglingId === product.id;
               return (
                 <tr key={product.id} className="hover:bg-gray-50/80 transition-colors">
-                  {/* Item info with thumbnail */}
+                  {/* Item info with thumbnail & SKU */}
                   <td className="px-4 py-3 flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-gray-200 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-lg bg-stone-50 overflow-hidden shrink-0 border border-gray-200 flex items-center justify-center p-0.5">
                       {product.image_url ? (
                         <img
                           src={product.image_url}
                           alt={product.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                         />
                       ) : (
                         <ImageOff className="w-5 h-5 text-gray-400" />
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-semibold text-gray-900 truncate">{product.name}</p>
+                      <div className="flex items-center gap-1.5">
+                        {product.sku && (
+                          <span className="font-mono text-xs font-semibold px-1.5 py-0.5 rounded bg-primary-50 text-primary-700">
+                            {product.sku}
+                          </span>
+                        )}
+                        <p className="font-semibold text-gray-900 truncate">{product.name}</p>
+                      </div>
                       {product.description && (
                         <p className="text-xs text-gray-500 truncate max-w-xs">{product.description}</p>
                       )}
                     </div>
+                  </td>
+
+                  {/* Category */}
+                  <td className="px-4 py-3 text-xs font-medium text-gray-600 capitalize whitespace-nowrap">
+                    <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                      {product.category || 'other'}
+                    </span>
                   </td>
 
                   {/* Price */}
@@ -76,36 +91,31 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({
                     {product.sort_order}
                   </td>
 
-                  {/* Active Toggle */}
+                  {/* Status Toggle */}
                   <td className="px-4 py-3 whitespace-nowrap">
                     <button
                       type="button"
                       disabled={isToggling}
                       onClick={() => onToggleActive(product)}
-                      aria-label={`Toggle active state for ${product.name}`}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold min-h-[36px] transition-colors ${
+                      title={`Click to ${product.active ? 'hide' : 'show'} product`}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold min-h-[36px] transition-colors ${
                         product.active
                           ? 'bg-green-100 text-green-800 hover:bg-green-200'
                           : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
                       }`}
                     >
                       {product.active ? (
-                        <>
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>Active</span>
-                        </>
+                        <Eye className="w-3.5 h-3.5" aria-hidden="true" />
                       ) : (
-                        <>
-                          <EyeOff className="w-3.5 h-3.5" />
-                          <span>Hidden</span>
-                        </>
+                        <EyeOff className="w-3.5 h-3.5" aria-hidden="true" />
                       )}
+                      <span>{product.active ? 'Active' : 'Hidden'}</span>
                     </button>
                   </td>
 
-                  {/* Actions */}
+                  {/* Edit and Delete Actions */}
                   <td className="px-4 py-3 text-right whitespace-nowrap">
-                    <div className="inline-flex items-center gap-1">
+                    <div className="flex items-center justify-end gap-1">
                       <button
                         type="button"
                         onClick={() => onEdit(product)}
@@ -139,14 +149,24 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({
           return (
             <div key={product.id} className="p-4 space-y-3">
               <div className="flex items-start gap-3">
-                <div className="w-16 h-16 rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-gray-200 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-lg bg-stone-50 overflow-hidden shrink-0 border border-gray-200 flex items-center justify-center p-0.5">
                   {product.image_url ? (
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-contain" />
                   ) : (
                     <ImageOff className="w-6 h-6 text-gray-400" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1 mb-0.5">
+                    {product.sku && (
+                      <span className="font-mono text-[10px] font-semibold px-1.5 py-0.2 rounded bg-primary-50 text-primary-700">
+                        {product.sku}
+                      </span>
+                    )}
+                    <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-gray-100 text-gray-600 capitalize">
+                      {product.category || 'other'}
+                    </span>
+                  </div>
                   <h3 className="font-semibold text-gray-900 text-sm line-clamp-1">{product.name}</h3>
                   <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">{product.description}</p>
                   <p className="font-serif font-bold text-gray-900 text-sm mt-1">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Upload, Loader2, ImageOff, Check } from 'lucide-react';
+import { X, Upload, Loader2, ImageOff, RefreshCw } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import type { Product } from '@/types/database';
+import type { Product, ProductCategory } from '@/types/database';
 import { compressImageToWebP } from '@/utils/imageCompressor';
 
 interface ProductFormModalProps {
@@ -10,6 +10,24 @@ interface ProductFormModalProps {
   onClose: () => void;
   onSaved: () => Promise<void>;
 }
+
+const getCategoryPrefix = (cat: ProductCategory): string => {
+  switch (cat) {
+    case 'necklace':
+      return 'NL';
+    case 'bracelet':
+      return 'BR';
+    case 'other':
+    default:
+      return 'OT';
+  }
+};
+
+const generateRandomSku = (cat: ProductCategory): string => {
+  const prefix = getCategoryPrefix(cat);
+  const randomNum = Math.floor(100 + Math.random() * 900);
+  return `${prefix}-${randomNum}`;
+};
 
 export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   product,
@@ -22,6 +40,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [description, setDescription] = useState('');
   const [priceInr, setPriceInr] = useState<number | ''>('');
   const [sortOrder, setSortOrder] = useState<number>(0);
+  const [category, setCategory] = useState<ProductCategory>('necklace');
+  const [sku, setSku] = useState('');
   const [active, setActive] = useState<boolean>(true);
   const [imageUrl, setImageUrl] = useState<string>('');
 
@@ -39,6 +59,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setDescription(product.description || '');
       setPriceInr(product.price_inr);
       setSortOrder(product.sort_order);
+      setCategory(product.category || 'other');
+      setSku(product.sku || '');
       setActive(product.active);
       setImageUrl(product.image_url || '');
     } else {
@@ -46,6 +68,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setDescription('');
       setPriceInr('');
       setSortOrder(0);
+      setCategory('necklace');
+      setSku(generateRandomSku('necklace'));
       setActive(true);
       setImageUrl('');
     }
@@ -61,83 +85,98 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
   if (!isOpen) return null;
 
+  const handleCategoryChange = (newCat: ProductCategory) => {
+    setCategory(newCat);
+    // If SKU is empty or begins with a known prefix, auto-update with new category prefix
+    if (!sku || sku.startsWith('NL-') || sku.startsWith('BR-') || sku.startsWith('OT-')) {
+      setSku(generateRandomSku(newCat));
+    }
+  };
+
+  const handleRegenerateSku = () => {
+    setSku(generateRandomSku(category));
+  };
+
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!supabase) {
+      setErrorMessage('Supabase client is not available. Check configuration.');
+      return;
+    }
+
     try {
       setUploadingImage(true);
       setErrorMessage(null);
-      setUploadProgress('Compressing image to WebP...');
+      setUploadProgress('Compressing image to WebP (max 1200px, <= 200KB)...');
 
-      // 1. Compress in browser to WebP (< 200KB, max 1200px)
-      const compressedFile = await compressImageToWebP(file, {
+      const compressedBlob = await compressImageToWebP(file, {
         maxDimension: 1200,
+        initialQuality: 0.85,
         maxSizeBytes: 200 * 1024,
       });
 
-      setUploadProgress('Uploading image to Supabase Storage...');
+      const sizeKB = Math.round(compressedBlob.size / 1024);
+      setUploadProgress(`Uploading compressed image (${sizeKB} KB)...`);
 
-      if (!supabase) {
-        throw new Error('Supabase client is not available.');
-      }
-
-      // 2. Upload to storage bucket product-images
       const fileExt = 'webp';
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
       const filePath = `products/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('product-images')
-        .upload(filePath, compressedFile, {
+        .upload(filePath, compressedBlob, {
           contentType: 'image/webp',
-          upsert: false,
+          upsert: true,
         });
 
       if (uploadError) {
-        throw new Error(`Storage upload error: ${uploadError.message}`);
+        throw new Error(uploadError.message);
       }
 
-      // 3. Get public URL
       const { data: publicUrlData } = supabase.storage
         .from('product-images')
         .getPublicUrl(filePath);
 
       setImageUrl(publicUrlData.publicUrl);
-      setUploadProgress('Image uploaded successfully!');
+      setUploadProgress(`Image uploaded successfully (${sizeKB} KB WebP)!`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to compress or upload image.';
-      setErrorMessage(msg);
-      console.error('[Upload Error]', err);
+      const msg = err instanceof Error ? err.message : 'Failed to compress and upload image.';
+      setErrorMessage(`Upload error: ${msg}`);
+      setUploadProgress(null);
     } finally {
       setUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(null);
-
-    if (!name.trim()) {
-      setErrorMessage('Product name is required.');
+    if (!supabase) {
+      setErrorMessage('Supabase client not initialized.');
       return;
     }
 
     const price = Number(priceInr);
     if (isNaN(price) || price < 0) {
-      setErrorMessage('Price must be a valid non-negative number.');
+      setErrorMessage('Price must be a valid positive number in INR.');
       return;
     }
 
     try {
       setSaving(true);
-      if (!supabase) throw new Error('Supabase client is not available.');
+      setErrorMessage(null);
 
       const productPayload = {
         name: name.trim(),
         description: description.trim() || null,
         price_inr: Math.round(price),
         sort_order: Number(sortOrder) || 0,
+        category,
+        sku: sku.trim() || null,
         active,
         image_url: imageUrl.trim() || null,
       };
@@ -173,15 +212,10 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="product-form-title"
-      onClick={onClose}
     >
-      <div
-        className="relative bg-white rounded-2xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-gray-100 max-h-[90vh] overflow-y-auto space-y-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-          <h2 id="product-form-title" className="font-serif font-bold text-xl sm:text-2xl text-gray-900">
+      <div className="relative bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-gray-100 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-100">
+          <h2 id="product-form-title" className="text-xl font-serif font-bold text-gray-900">
             {isEdit ? 'Edit Product' : 'Add New Product'}
           </h2>
           <button
@@ -195,12 +229,57 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         </div>
 
         {errorMessage && (
-          <div role="alert" className="p-3.5 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
+          <div role="alert" className="p-3.5 mb-4 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
             {errorMessage}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Category & SKU Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="product-category" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                Category *
+              </label>
+              <select
+                id="product-category"
+                value={category}
+                onChange={(e) => handleCategoryChange(e.target.value as ProductCategory)}
+                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-gray-300 bg-white focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 text-sm outline-none transition-colors"
+              >
+                <option value="necklace">Necklaces</option>
+                <option value="bracelet">Bracelets</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label htmlFor="product-sku" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  SKU / Item ID *
+                </label>
+                <button
+                  type="button"
+                  onClick={handleRegenerateSku}
+                  className="text-xs text-primary-700 hover:text-primary-800 flex items-center gap-1 font-medium focus:outline-none"
+                  title="Generate new random SKU"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  Auto-generate
+                </button>
+              </div>
+              <input
+                id="product-sku"
+                type="text"
+                required
+                value={sku}
+                onChange={(e) => setSku(e.target.value.toUpperCase())}
+                placeholder="e.g. NL-101"
+                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-gray-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 text-sm font-mono uppercase outline-none transition-colors"
+              />
+            </div>
+          </div>
+
           {/* Name */}
           <div>
             <label htmlFor="product-name" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
@@ -260,8 +339,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 id="product-sort"
                 type="number"
                 value={sortOrder}
-                onChange={(e) => setSortOrder(Number(e.target.value))}
-                placeholder="0"
+                onChange={(e) => setSortOrder(Number(e.target.value) || 0)}
                 className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-gray-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 text-sm outline-none transition-colors"
               />
             </div>
@@ -289,10 +367,10 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             </span>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              {/* Preview Thumbnail */}
-              <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 shrink-0 flex items-center justify-center">
+              {/* Preview Thumbnail - object-contain so complete piece is previewed */}
+              <div className="w-24 h-24 rounded-xl overflow-hidden bg-stone-50 border border-gray-200 shrink-0 flex items-center justify-center p-1">
                 {imageUrl ? (
-                  <img src={imageUrl} alt="Product preview" className="w-full h-full object-cover" />
+                  <img src={imageUrl} alt="Product preview" className="w-full h-full object-contain" />
                 ) : (
                   <ImageOff className="w-8 h-8 text-gray-400" aria-hidden="true" />
                 )}
@@ -341,8 +419,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 type="url"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://images.unsplash.com/..."
-                className="w-full min-h-[40px] px-3 py-1.5 rounded-lg border border-gray-200 focus:border-primary-600 focus:ring-1 focus:ring-primary-600 text-xs outline-none"
+                placeholder="https://..."
+                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-gray-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 text-sm outline-none transition-colors"
               />
             </div>
           </div>
@@ -351,28 +429,19 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           <div className="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
             <button
               type="button"
-              onClick={onClose}
               disabled={saving}
-              className="min-h-[44px] px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors text-sm"
+              onClick={onClose}
+              className="min-h-[44px] px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving || uploadingImage}
-              className="min-h-[44px] px-6 py-2.5 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors text-sm flex items-center gap-2 shadow-sm"
+              className="min-h-[44px] px-5 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 shadow-sm flex items-center gap-2 transition-colors disabled:opacity-50"
             >
-              {saving ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <>
-                  <Check className="w-4 h-4" />
-                  <span>{isEdit ? 'Save Changes' : 'Create Product'}</span>
-                </>
-              )}
+              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+              <span>{saving ? 'Saving...' : isEdit ? 'Update Product' : 'Add Product'}</span>
             </button>
           </div>
         </form>

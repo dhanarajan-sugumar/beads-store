@@ -1,9 +1,11 @@
 /**
  * Database type definitions for beads-store.
- * Matches Supabase 0001_init.sql schema.
+ * Matches Supabase 0001_init.sql and 0002_add_sku_and_category.sql schema.
  * Note: Must use type aliases rather than interfaces so TypeScript can satisfy
  * PostgREST GenericSchema / Record<string, unknown> index signature checks.
  */
+
+export type ProductCategory = 'necklace' | 'bracelet' | 'other';
 
 export type Product = {
   id: string;
@@ -13,6 +15,8 @@ export type Product = {
   image_url: string | null;
   active: boolean;
   sort_order: number;
+  category: ProductCategory;
+  sku: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -34,6 +38,8 @@ export type Database = {
           image_url?: string | null;
           active?: boolean;
           sort_order?: number;
+          category?: ProductCategory;
+          sku?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -45,6 +51,8 @@ export type Database = {
           image_url?: string | null;
           active?: boolean;
           sort_order?: number;
+          category?: ProductCategory;
+          sku?: string | null;
           created_at?: string;
           updated_at?: string;
         };

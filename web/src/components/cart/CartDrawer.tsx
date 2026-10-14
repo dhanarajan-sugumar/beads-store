@@ -107,13 +107,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenPdfShare }) => {
                   className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-gray-50 transition-colors"
                 >
                   {/* Thumbnail */}
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-200 shrink-0">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-stone-50 border border-gray-100 shrink-0 flex items-center justify-center p-1">
                     {item.image_url ? (
                       <img
                         src={item.image_url}
                         alt={item.name}
                         loading="lazy"
-                        className="w-full h-full object-cover object-center"
+                        className="w-full h-full object-contain object-center"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
@@ -126,9 +126,16 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenPdfShare }) => {
                   <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
                     <div>
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-medium text-gray-900 text-sm line-clamp-1">
-                          {item.name}
-                        </h3>
+                        <div className="min-w-0">
+                          {item.sku && (
+                            <span className="font-mono text-[10px] font-semibold text-primary-700 bg-primary-50 px-1.5 py-0.2 rounded inline-block mb-0.5">
+                              {item.sku}
+                            </span>
+                          )}
+                          <h3 className="font-medium text-gray-900 text-sm line-clamp-1">
+                            {item.name}
+                          </h3>
+                        </div>
                         <button
                           type="button"
                           onClick={() => removeItem(item.id)}

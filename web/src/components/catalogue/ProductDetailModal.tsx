@@ -71,17 +71,17 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
         {/* Modal scrollable body */}
         <div className="overflow-y-auto flex-1">
-          {/* Image */}
-          <div className="relative w-full aspect-square sm:aspect-4/3 bg-gray-100">
+          {/* Image - full view with object-contain so jewellery is never cropped */}
+          <div className="relative w-full max-h-[58vh] min-h-[260px] bg-stone-50 flex items-center justify-center p-3 sm:p-4 border-b border-gray-100">
             {product.image_url && !imageError ? (
               <img
                 src={product.image_url}
                 alt={product.name}
                 onError={() => setImageError(true)}
-                className="w-full h-full object-cover object-center"
+                className="max-h-[54vh] w-auto max-w-full object-contain mx-auto rounded-lg drop-shadow-xs"
               />
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-gray-400 p-6">
+              <div className="w-full h-48 flex flex-col items-center justify-center bg-gray-50 text-gray-400 p-6">
                 <ImageOff className="w-12 h-12 mb-2" aria-hidden="true" />
                 <span className="text-sm">No image available</span>
               </div>
@@ -90,6 +90,19 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
           {/* Details */}
           <div className="p-5 sm:p-6 space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              {product.sku && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-50 text-primary-800 border border-primary-200">
+                  SKU: {product.sku}
+                </span>
+              )}
+              {product.category && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 capitalize">
+                  {product.category}
+                </span>
+              )}
+            </div>
+
             <div className="flex items-start justify-between gap-4">
               <h2
                 id="product-modal-title"
@@ -116,16 +129,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           </div>
         </div>
 
-        {/* Modal Footer / Actions */}
-        <div className="p-4 sm:p-5 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+        {/* Modal footer actions */}
+        <div className="p-4 sm:p-5 border-t border-gray-100 bg-gray-50/80 flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[44px] px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors"
+            className="min-h-[44px] px-4 py-2.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 transition-colors"
           >
             Close
           </button>
-
           {onAddToCart && (
             <button
               type="button"
@@ -133,10 +145,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 onAddToCart(product);
                 onClose();
               }}
-              className="min-h-[44px] px-6 py-2.5 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors flex items-center gap-2"
+              className="min-h-[44px] px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 shadow-sm flex items-center gap-2 transition-colors"
             >
               <Plus className="w-4 h-4" aria-hidden="true" />
-              <span>Add to Cart</span>
+              Add to Cart
             </button>
           )}
         </div>

@@ -110,7 +110,7 @@ export const AdminPage: React.FC = () => {
       setDeleteModalOpen(false);
       setDeletingProduct(null);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete product');
+      alert(err instanceof Error ? err.message : 'Failed to delete product.');
     } finally {
       setIsDeleting(false);
     }
@@ -140,12 +140,14 @@ export const AdminPage: React.FC = () => {
     }
   };
 
-  // Filter products by search query
+  // Filter products by search query across name, description, SKU, and category
   const filteredProducts = products.filter((p) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     return (
       p.name.toLowerCase().includes(q) ||
+      (p.sku && p.sku.toLowerCase().includes(q)) ||
+      (p.category && p.category.toLowerCase().includes(q)) ||
       (p.description && p.description.toLowerCase().includes(q))
     );
   });
@@ -183,22 +185,23 @@ export const AdminPage: React.FC = () => {
           {authError && (
             <div
               role="alert"
-              className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs sm:text-sm flex items-start gap-3"
+              className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-900 text-sm flex items-start gap-3"
             >
               <ShieldAlert className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold">{authError}</p>
-                <p className="mt-1 text-xs text-red-600">
-                  Tip: Ensure your Supabase user ID exists in the <code className="font-mono bg-red-100 px-1 py-0.5 rounded">admin_users</code> table.
-                </p>
+                <p className="font-semibold">Access Denied</p>
+                <p className="text-xs text-red-700 mt-1">{authError}</p>
               </div>
             </div>
           )}
 
           <form onSubmit={handleLoginSubmit} className="space-y-4">
             <div>
-              <label htmlFor="admin-email" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                Admin Email
+              <label
+                htmlFor="admin-email"
+                className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1"
+              >
+                Email Address
               </label>
               <input
                 id="admin-email"
@@ -208,12 +211,15 @@ export const AdminPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@example.com"
-                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-gray-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 text-sm outline-none"
+                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-gray-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 text-sm outline-none transition-colors"
               />
             </div>
 
             <div>
-              <label htmlFor="admin-password" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+              <label
+                htmlFor="admin-password"
+                className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1"
+              >
                 Password
               </label>
               <input
@@ -224,33 +230,27 @@ export const AdminPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-gray-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 text-sm outline-none"
+                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-gray-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 text-sm outline-none transition-colors"
               />
             </div>
 
             <button
               type="submit"
               disabled={loggingIn}
-              className="w-full min-h-[44px] py-2.5 px-4 rounded-lg bg-primary-600 text-white font-semibold hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors text-sm flex items-center justify-center gap-2 shadow-sm"
+              className="w-full min-h-[44px] px-4 py-2.5 rounded-lg bg-primary-600 text-white font-medium text-sm hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 shadow-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
             >
-              {loggingIn ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Verifying Credentials...</span>
-                </>
-              ) : (
-                <span>Sign In to Admin</span>
-              )}
+              {loggingIn && <Loader2 className="w-4 h-4 animate-spin" />}
+              <span>{loggingIn ? 'Authenticating...' : 'Sign In as Admin'}</span>
             </button>
           </form>
 
-          <div className="text-center pt-2">
+          <div className="pt-4 border-t border-gray-100 text-center">
             <Link
               to="/"
-              className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-primary-700 font-medium transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Public Catalogue</span>
+              <span>Back to Store Catalogue</span>
             </Link>
           </div>
         </div>
@@ -261,41 +261,41 @@ export const AdminPage: React.FC = () => {
   // 3. Authenticated Admin Dashboard
   return (
     <div className="space-y-6">
-      {/* Top Admin Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl border border-gray-200 shadow-xs">
+      {/* Admin Top Bar */}
+      <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xs border border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider bg-primary-100 text-primary-800 px-2.5 py-0.5 rounded-full">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-primary-100 text-primary-800">
               Admin Portal
             </span>
-            <span className="text-xs text-gray-500">Logged in as {user.email}</span>
+            <span className="text-xs text-gray-400">•</span>
+            <span className="text-xs text-gray-500">{user.email}</span>
           </div>
-          <h1 className="font-serif font-bold text-2xl sm:text-3xl text-gray-900 mt-1">
-            Product Management
+          <h1 className="text-2xl font-serif font-bold text-gray-900 mt-1">
+            Catalogue Management
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-stretch sm:self-auto justify-end">
           <Link
             to="/"
-            className="min-h-[44px] px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium text-xs sm:text-sm flex items-center gap-1.5 transition-colors"
+            className="min-h-[44px] px-3.5 py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 text-xs font-semibold flex items-center gap-1.5 transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-3.5 h-3.5" />
             <span>Storefront</span>
           </Link>
-
           <button
             type="button"
             onClick={signOut}
-            className="min-h-[44px] px-4 py-2 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 font-medium text-xs sm:text-sm flex items-center gap-1.5 transition-colors"
+            className="min-h-[44px] px-3.5 py-2 rounded-xl border border-red-200 text-red-700 hover:bg-red-50 text-xs font-semibold flex items-center gap-1.5 transition-colors"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out</span>
           </button>
         </div>
       </div>
 
-      {/* Metrics & Action Bar */}
+      {/* Summary KPI Badges */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs">
           <p className="text-xs uppercase font-semibold text-gray-500">Total Products</p>
@@ -319,7 +319,7 @@ export const AdminPage: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search products by title..."
+            placeholder="Search by name, SKU (e.g. NL-101), or category..."
             className="w-full min-h-[44px] pl-10 pr-4 rounded-xl border border-gray-200 bg-white text-sm outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600"
           />
         </div>
@@ -348,16 +348,16 @@ export const AdminPage: React.FC = () => {
 
       {/* Error Message if any */}
       {productsError && (
-        <div role="alert" className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm">
+        <div role="alert" className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-900 text-sm">
           {productsError}
         </div>
       )}
 
-      {/* Product List Table / Cards */}
+      {/* Product List Table */}
       {loadingProducts && products.length === 0 ? (
-        <div className="py-16 text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary-600" />
-          <p className="text-gray-500 text-sm mt-2">Loading catalogue items...</p>
+        <div className="p-12 text-center text-gray-400 flex flex-col items-center justify-center space-y-3">
+          <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+          <p className="text-sm">Loading products...</p>
         </div>
       ) : (
         <ProductListTable
@@ -369,20 +369,21 @@ export const AdminPage: React.FC = () => {
         />
       )}
 
-      {/* Modals */}
+      {/* Add / Edit Form Modal */}
       <ProductFormModal
-        product={editingProduct}
         isOpen={formModalOpen}
+        product={editingProduct}
         onClose={() => setFormModalOpen(false)}
         onSaved={fetchAllProducts}
       />
 
+      {/* Delete Confirmation Modal */}
       <DeleteConfirmModal
-        product={deletingProduct}
         isOpen={deleteModalOpen}
+        product={deletingProduct}
+        loading={isDeleting}
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
-        loading={isDeleting}
       />
     </div>
   );

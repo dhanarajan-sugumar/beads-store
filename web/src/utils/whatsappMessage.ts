@@ -2,7 +2,7 @@ import type { CartItem } from './cartStorage';
 import { formatInrPrice } from './formatters';
 
 /**
- * Builds a clean, friendly WhatsApp message text summarizing the order with order reference code.
+ * Builds a clean, friendly WhatsApp message text summarizing the order with order reference code and item SKUs.
  */
 export function buildWhatsAppOrderMessage(
   shopName: string,
@@ -28,8 +28,9 @@ export function buildWhatsAppOrderMessage(
 
   items.forEach((item, index) => {
     const itemTotal = item.price_inr * item.quantity;
+    const nameWithSku = item.sku ? `[${item.sku}] ${item.name}` : item.name;
     lines.push(
-      `${index + 1}. *${item.name}*` +
+      `${index + 1}. *${nameWithSku}*` +
         `\n   Qty: ${item.quantity} × ${formatInrPrice(item.price_inr)} = ${formatInrPrice(itemTotal)}`
     );
   });

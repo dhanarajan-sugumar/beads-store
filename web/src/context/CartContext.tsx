@@ -54,6 +54,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: product.name,
         price_inr: product.price_inr,
         image_url: product.image_url,
+        sku: product.sku,
         quantity: clampQuantity(quantity),
       };
       return [...prevItems, newItem];
