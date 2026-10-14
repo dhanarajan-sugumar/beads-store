@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { HomePage } from '@/pages/HomePage';
+import { AdminPage } from '@/pages/AdminPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { CartProvider } from '@/context/CartContext';
 import { useCart } from '@/hooks/useCart';
@@ -25,6 +26,7 @@ const AppContent: React.FC = () => {
             }
           >
             <Route path="/" element={<HomePage onAddToCart={addItem} />} />
+            <Route path="/admin" element={<AdminPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

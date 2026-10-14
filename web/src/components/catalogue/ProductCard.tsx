@@ -32,7 +32,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       onClick={handleCardClick}
       className="group bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col cursor-pointer focus-within:ring-2 focus-within:ring-primary-600"
     >
-      {/* Image container */}
+      {/* Image container - uniform edge-to-edge full bleed tile */}
       <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
         {product.image_url && !imageError ? (
           <img
@@ -64,6 +64,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       {/* Content */}
       <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between">
         <div>
+          {product.sku && (
+            <span className="inline-block text-[11px] font-semibold tracking-wider text-primary-700 bg-primary-50 px-2 py-0.5 rounded mb-1 font-mono">
+              {product.sku}
+            </span>
+          )}
           <h3
             className="font-medium text-gray-900 text-sm sm:text-base line-clamp-2 group-hover:text-primary-700 transition-colors"
             title={product.name}

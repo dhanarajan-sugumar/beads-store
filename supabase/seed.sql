@@ -1,6 +1,6 @@
 -- seed.sql: Sample placeholder data for beads-store
 
-insert into public.products (name, description, price_inr, image_url, active, sort_order)
+insert into public.products (name, description, price_inr, image_url, active, sort_order, category, sku)
 values
   (
     'Sample Red Crystal Bracelet',
@@ -8,7 +8,9 @@ values
     499,
     'https://images.unsplash.com/photo-1611591475870-b74d49826a79?auto=format&fit=crop&w=600&q=80',
     true,
-    1
+    1,
+    'bracelet',
+    'BR-101'
   ),
   (
     'Sample Blue Glass Bead Necklace',
@@ -16,7 +18,9 @@ values
     1299,
     'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80',
     true,
-    2
+    2,
+    'necklace',
+    'NL-101'
   ),
   (
     'Sample Pastel Pearl Anklet',
@@ -24,5 +28,7 @@ values
     349,
     'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
     true,
-    3
+    3,
+    'other',
+    'OT-101'
   );

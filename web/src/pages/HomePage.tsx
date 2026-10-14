@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Sparkles, AlertCircle } from 'lucide-react';
 import { env } from '@/config/env';
 import { useProducts } from '@/hooks/useProducts';
 import { ProductGrid } from '@/components/catalogue/ProductGrid';
+import { CategoryFilter, FilterCategory } from '@/components/catalogue/CategoryFilter';
 import type { Product } from '@/types/database';
 
 interface HomePageProps {
@@ -12,6 +13,26 @@ interface HomePageProps {
 export const HomePage: React.FC<HomePageProps> = ({ onAddToCart }) => {
   const isEnvConfigured = Boolean(env.supabaseUrl && env.supabasePublishableKey);
   const { products, loading, error, refetch } = useProducts();
+  const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('all');
+
+  // Compute item counts for each category pill
+  const counts = useMemo(() => {
+    return {
+      all: products.length,
+      necklace: products.filter((p) => p.category === 'necklace').length,
+      bracelet: products.filter((p) => p.category === 'bracelet').length,
+      other: products.filter((p) => p.category !== 'necklace' && p.category !== 'bracelet').length,
+    };
+  }, [products]);
+
+  // Filter products by selected pill
+  const filteredProducts = useMemo(() => {
+    if (selectedCategory === 'all') return products;
+    if (selectedCategory === 'other') {
+      return products.filter((p) => p.category !== 'necklace' && p.category !== 'bracelet');
+    }
+    return products.filter((p) => p.category === selectedCategory);
+  }, [products, selectedCategory]);
 
   return (
     <div className="space-y-8">
@@ -61,13 +82,22 @@ export const HomePage: React.FC<HomePageProps> = ({ onAddToCart }) => {
 
           {!loading && !error && products.length > 0 && (
             <span className="text-sm text-gray-500 font-medium self-start sm:self-auto">
-              {products.length} {products.length === 1 ? 'piece' : 'pieces'} available
+              {filteredProducts.length} of {products.length} {products.length === 1 ? 'piece' : 'pieces'} shown
             </span>
           )}
         </div>
 
+        {/* Category Pills Filter */}
+        {!loading && !error && products.length > 0 && (
+          <CategoryFilter
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+            counts={counts}
+          />
+        )}
+
         <ProductGrid
-          products={products}
+          products={filteredProducts}
           loading={loading}
           error={error}
           onRetry={refetch}

@@ -163,12 +163,13 @@ export async function generateOrderPdf(
       doc.text('No img', colImgX + 2, rowStartY + 8);
     }
 
-    // Product Title (with word wrap)
+    // Product Title (with word wrap and SKU if present)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.setTextColor(30, 30, 30);
+    const displayName = item.sku ? `[${item.sku}] ${item.name}` : item.name;
     const maxNameWidth = colPriceX - colNameX - 4;
-    const splitTitle = doc.splitTextToSize(item.name, maxNameWidth);
+    const splitTitle = doc.splitTextToSize(displayName, maxNameWidth);
     doc.text(splitTitle, colNameX, rowStartY + 5);
 
     // Unit Price

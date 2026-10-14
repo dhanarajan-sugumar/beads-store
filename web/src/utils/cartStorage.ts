@@ -8,6 +8,7 @@ export interface CartItem {
   name: string;
   price_inr: number;
   image_url: string | null;
+  sku?: string | null;
   quantity: number;
 }
 
@@ -24,18 +25,16 @@ export function loadCartFromStorage(): CartItem[] {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
 
-    // Validate structure of parsed items
-    return parsed.filter((item): item is CartItem => {
-      return (
-        item &&
+    return parsed.filter(
+      (item): item is CartItem =>
+        typeof item === 'object' &&
+        item !== null &&
         typeof item.id === 'string' &&
         typeof item.name === 'string' &&
         typeof item.price_inr === 'number' &&
-        item.price_inr >= 0 &&
         typeof item.quantity === 'number' &&
         item.quantity > 0
-      );
-    });
+    );
   } catch (error) {
     console.warn('[CartStorage] Failed to read from localStorage:', error);
     return [];
@@ -50,5 +49,16 @@ export function saveCartToStorage(items: CartItem[]): void {
     window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
   } catch (error) {
     console.warn('[CartStorage] Failed to write to localStorage:', error);
+  }
+}
+
+export function clearCartStorage(): void {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return;
+    }
+    window.localStorage.removeItem(CART_STORAGE_KEY);
+  } catch (error) {
+    console.warn('[CartStorage] Failed to clear localStorage:', error);
   }
 }
