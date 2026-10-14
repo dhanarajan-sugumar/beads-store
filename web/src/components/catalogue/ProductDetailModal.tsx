@@ -55,8 +55,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   return (
     <>
+      {/* Product Detail Modal */}
       <div
-        className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
+        className={`fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 ${
+          isFullscreen ? 'invisible pointer-events-none' : ''
+        }`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-modal-title"
@@ -178,21 +181,21 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         </div>
       </div>
 
-      {/* Fullscreen Lightbox Modal */}
+      {/* Fullscreen Lightbox Modal - elevated to z-[9999] so it is in front of everything */}
       {isFullscreen && product.image_url && (
         <div
           role="dialog"
           aria-modal="true"
           aria-label="Full screen image view"
           onClick={() => setIsFullscreen(false)}
-          className="fixed inset-0 z-60 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-200"
+          className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-150"
         >
           {/* Lightbox Close Button */}
           <button
             type="button"
             onClick={() => setIsFullscreen(false)}
             aria-label="Close full screen view"
-            className="absolute top-4 right-4 z-70 min-w-[44px] min-h-[44px] p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="absolute top-4 right-4 z-[10000] min-w-[44px] min-h-[44px] p-2.5 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white shadow-lg"
           >
             <X className="w-6 h-6" aria-hidden="true" />
           </button>
@@ -209,7 +212,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
           {/* Caption */}
           <div
-            className="mt-3 text-center text-white/90 text-sm font-medium space-y-0.5"
+            className="mt-3 text-center text-white/90 text-sm font-medium space-y-0.5 select-none"
             onClick={(e) => e.stopPropagation()}
           >
             <p>
