@@ -98,9 +98,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </span>
           )}
 
-          {/* Product Name in Cormorant 20px regular */}
+          {/* Product Name in Jost Bold */}
           <h3
-            className="font-serif font-normal text-ink text-[18px] sm:text-[20px] leading-snug line-clamp-2 group-hover:text-oxblood transition-colors duration-200"
+            className="font-sans font-bold text-ink text-[16px] sm:text-[18px] tracking-tight leading-snug line-clamp-2 group-hover:text-oxblood transition-colors duration-200"
             title={product.name}
           >
             {product.name}

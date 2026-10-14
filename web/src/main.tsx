@@ -5,6 +5,8 @@ import '@fontsource/cormorant-garamond/500.css';
 import '@fontsource/cormorant-garamond/600-italic.css';
 import '@fontsource/jost/400.css';
 import '@fontsource/jost/500.css';
+import '@fontsource/jost/600.css';
+import '@fontsource/jost/700.css';
 import App from './App';
 import './index.css';
 

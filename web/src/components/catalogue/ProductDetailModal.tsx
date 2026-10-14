@@ -143,10 +143,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   {product.sku && <span>{product.sku}</span>}
                 </div>
 
-                {/* Name in Cormorant 32px */}
+                {/* Name in Jost Bold */}
                 <h2
                   id="product-modal-title"
-                  className="font-serif font-normal text-2xl sm:text-[32px] text-ink leading-tight"
+                  className="font-sans font-bold text-2xl sm:text-3xl text-ink leading-tight"
                 >
                   {product.name}
                 </h2>

@@ -134,7 +134,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenPdfShare }) => {
                               {item.sku}
                             </span>
                           )}
-                          <h3 className="font-serif font-normal text-ink text-base line-clamp-1">
+                          <h3 className="font-sans font-bold text-ink text-sm sm:text-base line-clamp-1">
                             {item.name}
                           </h3>
                         </div>
