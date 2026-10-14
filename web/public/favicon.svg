@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#DCBE8A" />
+      <stop offset="100%" stop-color="#B8893B" />
+    </linearGradient>
+    <linearGradient id="crimsonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e58a9b" />
+      <stop offset="100%" stop-color="#c0405a" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#FBF6EE" />
+  <circle cx="32" cy="14" r="4.5" fill="url(#crimsonGrad)" />
+  <circle cx="21" cy="18" r="4" fill="url(#goldGrad)" />
+  <circle cx="43" cy="18" r="4" fill="url(#goldGrad)" />
+  <circle cx="14" cy="27" r="4.5" fill="url(#crimsonGrad)" />
+  <circle cx="50" cy="27" r="4.5" fill="url(#crimsonGrad)" />
+  <circle cx="14" cy="38" r="4" fill="url(#goldGrad)" />
+  <circle cx="50" cy="38" r="4" fill="url(#goldGrad)" />
+  <circle cx="20" cy="47" r="4.5" fill="url(#crimsonGrad)" />
+  <circle cx="44" cy="47" r="4.5" fill="url(#crimsonGrad)" />
+  <!-- Center Pendant Bead -->
+  <circle cx="32" cy="52" r="6" fill="url(#crimsonGrad)" stroke="#B8893B" stroke-width="2" />
+  <circle cx="32" cy="52" r="2" fill="#FAF6EE" />
+</svg>
