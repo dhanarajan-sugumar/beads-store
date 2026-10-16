@@ -22,9 +22,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  // Mouse-Over Zoom state
+  // Mouse & Touch Zoom state
+  const imageContainerRef = useRef<HTMLDivElement>(null);
   const [isZooming, setIsZooming] = useState(false);
+  const [isLockedZoom, setIsLockedZoom] = useState(false);
   const [zoomCoords, setZoomCoords] = useState({ x: 50, y: 50 });
+
+  const lastTapTimeRef = useRef<number>(0);
+  const touchStartPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const isDraggingRef = useRef(false);
 
   const { items, addItem, updateQuantity, removeItem, openCart } = useCart();
   const { showToast } = useToast();
@@ -40,6 +46,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     setIsFullscreen(false);
     setActiveImageIndex(0);
     setIsZooming(false);
+    setIsLockedZoom(false);
     setZoomCoords({ x: 50, y: 50 });
   }, [product]);
 
@@ -89,15 +96,69 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     });
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
+  const updateZoomFromCoords = (clientX: number, clientY: number) => {
+    if (!imageContainerRef.current) return;
+    const rect = imageContainerRef.current.getBoundingClientRect();
+    const x = ((clientX - rect.left) / rect.width) * 100;
+    const y = ((clientY - rect.top) / rect.height) * 100;
     setZoomCoords({
       x: Math.max(0, Math.min(100, x)),
       y: Math.max(0, Math.min(100, y)),
     });
   };
+
+  // Desktop Mouse handlers
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    updateZoomFromCoords(e.clientX, e.clientY);
+  };
+
+  // Mobile Touch handlers (Touch & Drag, Double-Tap)
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    touchStartPosRef.current = { x: touch.clientX, y: touch.clientY };
+    isDraggingRef.current = false;
+    updateZoomFromCoords(touch.clientX, touch.clientY);
+    setIsZooming(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const deltaX = Math.abs(touch.clientX - touchStartPosRef.current.x);
+    const deltaY = Math.abs(touch.clientY - touchStartPosRef.current.y);
+    if (deltaX > 4 || deltaY > 4) {
+      isDraggingRef.current = true;
+    }
+    updateZoomFromCoords(touch.clientX, touch.clientY);
+  };
+
+  const handleTouchEnd = () => {
+    const now = Date.now();
+    const timeSinceLastTap = now - lastTapTimeRef.current;
+
+    // Double tap toggle (< 300ms)
+    if (!isDraggingRef.current && timeSinceLastTap < 300) {
+      setIsLockedZoom((prev) => {
+        const next = !prev;
+        setIsZooming(next);
+        if (!next) setZoomCoords({ x: 50, y: 50 });
+        return next;
+      });
+      lastTapTimeRef.current = 0;
+      return;
+    }
+
+    lastTapTimeRef.current = now;
+
+    // If not locked, zoom out smoothly when finger is lifted
+    if (!isLockedZoom) {
+      setIsZooming(false);
+      setZoomCoords({ x: 50, y: 50 });
+    }
+  };
+
+  const isZoomActive = isZooming || isLockedZoom;
 
   return (
     <>
@@ -128,18 +189,30 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
           {/* Modal scrollable body - 2 Column on Desktop */}
           <div className="overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2">
-            {/* Left: Interactive Multi-Image Gallery with Mouse-Over Zoom */}
+            {/* Left: Interactive Multi-Image Gallery with Mouse-Over & Touch Zoom */}
             <div className="relative w-full bg-stone-100/50 flex flex-col items-center justify-between p-4 sm:p-6 border-b md:border-b-0 md:border-r border-gold/30 min-h-[320px] md:min-h-[440px]">
-              {/* Main Image Container with Mouse-Over Zoom */}
+              {/* Main Image Container with Mouse-Over & Mobile Touch Zoom */}
               <div
+                ref={imageContainerRef}
                 className="relative w-full flex-1 flex items-center justify-center overflow-hidden rounded-[2px] select-none cursor-zoom-in group"
+                style={{ touchAction: isZoomActive ? 'none' : 'auto' }}
                 onMouseMove={handleMouseMove}
                 onMouseEnter={() => setIsZooming(true)}
                 onMouseLeave={() => {
-                  setIsZooming(false);
-                  setZoomCoords({ x: 50, y: 50 });
+                  if (!isLockedZoom) {
+                    setIsZooming(false);
+                    setZoomCoords({ x: 50, y: 50 });
+                  }
                 }}
-                onClick={() => setIsFullscreen(true)}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onClick={() => {
+                  // Only open fullscreen if not dragging on touch
+                  if (!isDraggingRef.current) {
+                    setIsFullscreen(true);
+                  }
+                }}
               >
                 {currentImage && !imageError ? (
                   <>
@@ -149,17 +222,24 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       onError={() => setImageError(true)}
                       style={{
                         transformOrigin: `${zoomCoords.x}% ${zoomCoords.y}%`,
-                        transform: isZooming ? 'scale(2.4)' : 'scale(1)',
+                        transform: isZoomActive ? 'scale(2.4)' : 'scale(1)',
                       }}
                       className={`max-h-[40vh] md:max-h-[54vh] w-auto max-w-full object-contain mx-auto rounded-[2px] will-change-transform ${
-                        isZooming ? 'duration-75 cursor-crosshair' : 'duration-300'
+                        isZoomActive ? 'duration-75 cursor-crosshair' : 'duration-300'
                       }`}
                     />
 
-                    {/* Hint badge: Hover to zoom */}
-                    <div className="absolute top-2 left-2 pointer-events-none hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] bg-ivory/90 text-ink/80 text-[10px] font-sans tracking-wider uppercase border border-gold/30 shadow-xs backdrop-blur-xs transition-opacity opacity-80 group-hover:opacity-100">
+                    {/* Hint badge: Hover on desktop, Touch on mobile */}
+                    <div className="absolute top-2 left-2 pointer-events-none flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] bg-ivory/90 text-ink/80 text-[10px] font-sans tracking-wider uppercase border border-gold/30 shadow-xs backdrop-blur-xs transition-opacity opacity-85 group-hover:opacity-100">
                       <ZoomIn className="w-3 h-3 text-gold" />
-                      <span>{isZooming ? '2.4× Zoom' : 'Hover to Zoom'}</span>
+                      <span className="hidden md:inline">{isZoomActive ? '2.4× Zoom' : 'Hover to Zoom'}</span>
+                      <span className="inline md:hidden">
+                        {isZoomActive
+                          ? isLockedZoom
+                            ? 'Zoomed (Double-tap to reset)'
+                            : '2.4× Zooming'
+                          : 'Touch & Drag to Zoom'}
+                      </span>
                     </div>
 
                     {/* Fullscreen button overlay */}
@@ -183,10 +263,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
+                            setIsLockedZoom(false);
                             setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : allImages.length - 1));
                           }}
                           aria-label="Previous photo"
-                          className="absolute left-1.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-ivory/90 hover:bg-ivory text-ink hover:text-oxblood shadow-xs border border-gold/40 transition-opacity opacity-0 group-hover:opacity-100 hidden sm:flex items-center justify-center focus:opacity-100"
+                          className="absolute left-1.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-ivory/90 hover:bg-ivory text-ink hover:text-oxblood shadow-xs border border-gold/40 transition-opacity opacity-0 group-hover:opacity-100 flex items-center justify-center focus:opacity-100"
                         >
                           <ChevronLeft className="w-4 h-4 stroke-[1.5]" />
                         </button>
@@ -194,10 +275,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
+                            setIsLockedZoom(false);
                             setActiveImageIndex((prev) => (prev < allImages.length - 1 ? prev + 1 : 0));
                           }}
                           aria-label="Next photo"
-                          className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-ivory/90 hover:bg-ivory text-ink hover:text-oxblood shadow-xs border border-gold/40 transition-opacity opacity-0 group-hover:opacity-100 hidden sm:flex items-center justify-center focus:opacity-100"
+                          className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-ivory/90 hover:bg-ivory text-ink hover:text-oxblood shadow-xs border border-gold/40 transition-opacity opacity-0 group-hover:opacity-100 flex items-center justify-center focus:opacity-100"
                         >
                           <ChevronRight className="w-4 h-4 stroke-[1.5]" />
                         </button>
