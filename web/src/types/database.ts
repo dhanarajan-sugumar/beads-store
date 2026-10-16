@@ -13,6 +13,7 @@ export type Product = {
   description: string | null;
   price_inr: number;
   image_url: string | null;
+  images?: string[];
   active: boolean;
   sort_order: number;
   category: ProductCategory;
@@ -36,6 +37,7 @@ export type Database = {
           description?: string | null;
           price_inr: number;
           image_url?: string | null;
+          images?: string[];
           active?: boolean;
           sort_order?: number;
           category?: ProductCategory;
@@ -49,6 +51,7 @@ export type Database = {
           description?: string | null;
           price_inr?: number;
           image_url?: string | null;
+          images?: string[];
           active?: boolean;
           sort_order?: number;
           category?: ProductCategory;

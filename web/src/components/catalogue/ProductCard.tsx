@@ -4,6 +4,7 @@ import type { Product } from '@/types/database';
 import { formatInrPrice } from '@/utils/formatters';
 import { useCart } from '@/hooks/useCart';
 import { useToast } from '@/hooks/useToast';
+import { getProductImages, getPrimaryImage, getSecondaryImage } from '@/utils/productImages';
 
 interface ProductCardProps {
   product: Product;
@@ -61,23 +62,57 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     >
       {/* 4:5 Portrait Image Crop with slow hover zoom (scale 1.04, 600ms) */}
       <div className="relative w-full aspect-[4/5] bg-stone-100/60 overflow-hidden rounded-[2px]">
-        {product.image_url && !imageError ? (
-          <img
-            src={product.image_url}
-            alt={product.name}
-            loading="lazy"
-            onError={() => setImageError(true)}
-            className="w-full h-full object-cover object-center group-hover:scale-[1.04] transition-transform duration-[600ms] ease-out"
-          />
-        ) : (
-          <div
-            className="w-full h-full flex flex-col items-center justify-center bg-stone-100/40 text-muted p-4 text-center"
-            aria-label="No image available"
-          >
-            <ImageOff className="w-6 h-6 mb-1 text-muted/60 stroke-[1.5]" aria-hidden="true" />
-            <span className="text-[11px] font-sans tracking-wider uppercase text-muted">No image</span>
-          </div>
-        )}
+        {(() => {
+          const primaryImage = getPrimaryImage(product);
+          const secondaryImage = getSecondaryImage(product);
+          const imagesList = getProductImages(product);
+
+          if (primaryImage && !imageError) {
+            return (
+              <>
+                <img
+                  src={primaryImage}
+                  alt={product.name}
+                  loading="lazy"
+                  onError={() => setImageError(true)}
+                  className={`w-full h-full object-cover object-center transition-all duration-[600ms] ease-out ${
+                    secondaryImage
+                      ? 'group-hover:opacity-0'
+                      : 'group-hover:scale-[1.04]'
+                  }`}
+                />
+
+                {/* Secondary image fades in on hover for multi-photo products */}
+                {secondaryImage && (
+                  <img
+                    src={secondaryImage}
+                    alt=""
+                    loading="lazy"
+                    aria-hidden="true"
+                    className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out group-hover:scale-[1.03]"
+                  />
+                )}
+
+                {/* Multi-photo indicator pill */}
+                {imagesList.length > 1 && (
+                  <span className="absolute bottom-2 left-2 z-10 px-1.5 py-0.5 rounded-[2px] bg-ivory/90 text-ink text-[9px] font-sans tracking-widest uppercase shadow-xs border border-gold/30">
+                    {imagesList.length} Photos
+                  </span>
+                )}
+              </>
+            );
+          }
+
+          return (
+            <div
+              className="w-full h-full flex flex-col items-center justify-center bg-stone-100/40 text-muted p-4 text-center"
+              aria-label="No image available"
+            >
+              <ImageOff className="w-6 h-6 mb-1 text-muted/60 stroke-[1.5]" aria-hidden="true" />
+              <span className="text-[11px] font-sans tracking-wider uppercase text-muted">No image</span>
+            </div>
+          );
+        })()}
 
         {/* Subtle quick view label on desktop hover */}
         <div className="absolute inset-0 bg-ink/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex items-center justify-center pointer-events-none">

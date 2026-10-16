@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, Trash2, Eye, EyeOff, ImageOff } from 'lucide-react';
+import { Edit2, Trash2, Eye, EyeOff, ImageOff, Layers } from 'lucide-react';
 import type { Product } from '@/types/database';
 import { formatInrPrice } from '@/utils/formatters';
 
@@ -44,19 +44,32 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({
           <tbody className="divide-y divide-gray-100">
             {products.map((product) => {
               const isToggling = togglingId === product.id;
+              const imageCount = (product.images && product.images.length > 0)
+                ? product.images.length
+                : (product.image_url ? 1 : 0);
+              const displayImage = product.images?.[0] || product.image_url;
               return (
                 <tr key={product.id} className="hover:bg-gray-50/80 transition-colors">
                   {/* Item info with thumbnail & SKU */}
                   <td className="px-4 py-3.5 flex items-center gap-3.5">
-                    <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-lg bg-stone-100 overflow-hidden shrink-0 border border-gray-200 shadow-2xs flex items-center justify-center">
-                      {product.image_url ? (
+                    <div className="relative w-20 h-24 sm:w-24 sm:h-28 rounded-lg bg-stone-100 overflow-hidden shrink-0 border border-gray-200 shadow-2xs flex items-center justify-center">
+                      {displayImage ? (
                         <img
-                          src={product.image_url}
+                          src={displayImage}
                           alt={product.name}
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <ImageOff className="w-6 h-6 text-gray-400" />
+                      )}
+                      {imageCount > 1 && (
+                        <span
+                          title={`${imageCount} photos`}
+                          className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-stone-900/80 text-white text-[10px] font-sans font-medium flex items-center gap-1 shadow-xs backdrop-blur-xs"
+                        >
+                          <Layers className="w-2.5 h-2.5" />
+                          {imageCount}
+                        </span>
                       )}
                     </div>
                     <div className="min-w-0">
@@ -146,14 +159,27 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({
       <div className="md:hidden divide-y divide-gray-100">
         {products.map((product) => {
           const isToggling = togglingId === product.id;
+          const imageCount = (product.images && product.images.length > 0)
+            ? product.images.length
+            : (product.image_url ? 1 : 0);
+          const displayImage = product.images?.[0] || product.image_url;
           return (
             <div key={product.id} className="p-4 space-y-3">
               <div className="flex items-start gap-3.5">
-                <div className="w-24 h-28 rounded-lg bg-stone-100 overflow-hidden shrink-0 border border-gray-200 shadow-2xs flex items-center justify-center">
-                  {product.image_url ? (
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                <div className="relative w-24 h-28 rounded-lg bg-stone-100 overflow-hidden shrink-0 border border-gray-200 shadow-2xs flex items-center justify-center">
+                  {displayImage ? (
+                    <img src={displayImage} alt={product.name} className="w-full h-full object-cover" />
                   ) : (
                     <ImageOff className="w-6 h-6 text-gray-400" />
+                  )}
+                  {imageCount > 1 && (
+                    <span
+                      title={`${imageCount} photos`}
+                      className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-stone-900/80 text-white text-[10px] font-sans font-medium flex items-center gap-1 shadow-xs backdrop-blur-xs"
+                    >
+                      <Layers className="w-2.5 h-2.5" />
+                      {imageCount}
+                    </span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
