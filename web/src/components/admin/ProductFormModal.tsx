@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Upload, Loader2, ImageOff, RefreshCw } from 'lucide-react';
+import { X, Upload, Loader2, ImageOff, RefreshCw, Trash2, Star, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { Product, ProductCategory } from '@/types/database';
 import { compressImageToWebP } from '@/utils/imageCompressor';
+import { setCoverImage, moveImage } from '@/utils/productImages';
 
 interface ProductFormModalProps {
   product: Product | null; // null for add mode, Product for edit mode
@@ -43,7 +44,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [category, setCategory] = useState<ProductCategory>('necklace');
   const [sku, setSku] = useState('');
   const [active, setActive] = useState<boolean>(true);
-  const [imageUrl, setImageUrl] = useState<string>('');
+  const [images, setImages] = useState<string[]>([]);
+  const [newUrlInput, setNewUrlInput] = useState<string>('');
 
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
@@ -62,7 +64,10 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setCategory(product.category || 'other');
       setSku(product.sku || '');
       setActive(product.active);
-      setImageUrl(product.image_url || '');
+      const initialImages = (product.images && product.images.length > 0)
+        ? product.images
+        : (product.image_url ? [product.image_url] : []);
+      setImages(initialImages);
     } else {
       setName('');
       setDescription('');
@@ -71,8 +76,9 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setCategory('necklace');
       setSku(generateRandomSku('necklace'));
       setActive(true);
-      setImageUrl('');
+      setImages([]);
     }
+    setNewUrlInput('');
     setErrorMessage(null);
     setUploadProgress(null);
   }, [product, isOpen]);
@@ -98,8 +104,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   };
 
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
     if (!supabase) {
       setErrorMessage('Supabase client is not available. Check configuration.');
@@ -109,38 +115,45 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     try {
       setUploadingImage(true);
       setErrorMessage(null);
-      setUploadProgress('Compressing image to WebP (max 1200px, <= 200KB)...');
+      const uploadedUrls: string[] = [];
 
-      const compressedBlob = await compressImageToWebP(file, {
-        maxDimension: 1200,
-        initialQuality: 0.85,
-        maxSizeBytes: 200 * 1024,
-      });
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        setUploadProgress(`Compressing image ${i + 1} of ${files.length} (${file.name})...`);
 
-      const sizeKB = Math.round(compressedBlob.size / 1024);
-      setUploadProgress(`Uploading compressed image (${sizeKB} KB)...`);
-
-      const fileExt = 'webp';
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-      const filePath = `products/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, compressedBlob, {
-          contentType: 'image/webp',
-          upsert: true,
+        const compressedBlob = await compressImageToWebP(file, {
+          maxDimension: 1200,
+          initialQuality: 0.85,
+          maxSizeBytes: 200 * 1024,
         });
 
-      if (uploadError) {
-        throw new Error(uploadError.message);
+        const sizeKB = Math.round(compressedBlob.size / 1024);
+        setUploadProgress(`Uploading image ${i + 1} of ${files.length} (${sizeKB} KB WebP)...`);
+
+        const fileExt = 'webp';
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        const filePath = `products/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, compressedBlob, {
+            contentType: 'image/webp',
+            upsert: true,
+          });
+
+        if (uploadError) {
+          throw new Error(uploadError.message);
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(filePath);
+
+        uploadedUrls.push(publicUrlData.publicUrl);
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath);
-
-      setImageUrl(publicUrlData.publicUrl);
-      setUploadProgress(`Image uploaded successfully (${sizeKB} KB WebP)!`);
+      setImages((prev) => [...prev, ...uploadedUrls]);
+      setUploadProgress(`Successfully uploaded ${files.length} image(s)!`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to compress and upload image.';
       setErrorMessage(`Upload error: ${msg}`);
@@ -151,6 +164,25 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         fileInputRef.current.value = '';
       }
     }
+  };
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    setImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  const handleSetCover = (indexToCover: number) => {
+    setImages((prev) => setCoverImage(prev, indexToCover));
+  };
+
+  const handleMoveImage = (index: number, direction: 'left' | 'right') => {
+    setImages((prev) => moveImage(prev, index, direction));
+  };
+
+  const handleAddUrl = () => {
+    const trimmed = newUrlInput.trim();
+    if (!trimmed) return;
+    setImages((prev) => [...prev, trimmed]);
+    setNewUrlInput('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -170,6 +202,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setSaving(true);
       setErrorMessage(null);
 
+      const primaryImageUrl = images.length > 0 ? images[0] : null;
+
       const productPayload = {
         name: name.trim(),
         description: description.trim() || null,
@@ -178,7 +212,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         category,
         sku: sku.trim() || null,
         active,
-        image_url: imageUrl.trim() || null,
+        image_url: primaryImageUrl,
+        images,
       };
 
       if (isEdit && product) {
@@ -360,68 +395,174 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             </label>
           </div>
 
-          {/* Image Upload & Preview */}
+          {/* Multiple Images Upload & Gallery */}
           <div className="pt-2 border-t border-gray-100 space-y-3">
-            <span className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
-              Product Image
-            </span>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="block text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Product Images ({images.length})
+                </span>
+                <p className="text-[11px] text-gray-500">
+                  The first photo is the <strong>Cover</strong> shown on the catalogue card. Reorder or click "Make Cover" to change.
+                </p>
+              </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              {/* Preview Thumbnail - object-contain so complete piece is previewed */}
-              <div className="w-24 h-24 rounded-xl overflow-hidden bg-stone-50 border border-gray-200 shrink-0 flex items-center justify-center p-1">
-                {imageUrl ? (
-                  <img src={imageUrl} alt="Product preview" className="w-full h-full object-contain" />
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageFileChange}
+                className="hidden"
+                id="image-upload-input"
+              />
+
+              <button
+                type="button"
+                disabled={uploadingImage}
+                onClick={() => fileInputRef.current?.click()}
+                className="min-h-[38px] px-3.5 py-1.5 rounded-lg border border-primary-200 bg-primary-50 hover:bg-primary-100 text-primary-800 text-xs font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors flex items-center gap-1.5 shrink-0"
+              >
+                {uploadingImage ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
                 ) : (
-                  <ImageOff className="w-8 h-8 text-gray-400" aria-hidden="true" />
+                  <Upload className="w-4 h-4 text-primary-700" />
                 )}
-              </div>
-
-              {/* Upload controls */}
-              <div className="flex-1 space-y-2 w-full">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageFileChange}
-                  className="hidden"
-                  id="image-upload-input"
-                />
-
-                <button
-                  type="button"
-                  disabled={uploadingImage}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="min-h-[44px] w-full sm:w-auto px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 text-xs font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors flex items-center justify-center gap-2"
-                >
-                  {uploadingImage ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
-                  ) : (
-                    <Upload className="w-4 h-4" />
-                  )}
-                  <span>{uploadingImage ? 'Compressing & Uploading...' : 'Upload Image (WebP ~200KB)'}</span>
-                </button>
-
-                {uploadProgress && (
-                  <p className="text-xs text-primary-700 font-medium">
-                    {uploadProgress}
-                  </p>
-                )}
-              </div>
+                <span>{uploadingImage ? 'Uploading...' : '+ Upload Photos'}</span>
+              </button>
             </div>
 
+            {uploadProgress && (
+              <p className="text-xs text-primary-700 font-medium bg-primary-50 px-3 py-1.5 rounded-md border border-primary-100">
+                {uploadProgress}
+              </p>
+            )}
+
+            {/* Images Grid */}
+            {images.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-1">
+                {images.map((imgUrl, idx) => {
+                  const isCover = idx === 0;
+                  return (
+                    <div
+                      key={`${imgUrl}-${idx}`}
+                      className={`relative group rounded-lg overflow-hidden border bg-stone-50 flex flex-col ${
+                        isCover ? 'border-primary-500 ring-2 ring-primary-500/20' : 'border-gray-200'
+                      }`}
+                    >
+                      {/* Image Thumbnail */}
+                      <div className="aspect-[4/5] w-full bg-stone-100 overflow-hidden relative">
+                        <img
+                          src={imgUrl}
+                          alt={`Product thumbnail ${idx + 1}`}
+                          className="w-full h-full object-cover object-center"
+                        />
+
+                        {/* Cover Badge */}
+                        {isCover && (
+                          <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-sm bg-primary-700 text-white text-[10px] font-sans font-semibold tracking-wider uppercase shadow-xs flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-white" />
+                            Cover
+                          </span>
+                        )}
+
+                        {/* Delete Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(idx)}
+                          aria-label={`Remove photo ${idx + 1}`}
+                          className="absolute top-1.5 right-1.5 p-1 rounded-full bg-white/90 hover:bg-red-50 text-gray-600 hover:text-red-600 shadow-xs transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Controls Toolbar */}
+                      <div className="p-1.5 bg-white border-t border-gray-100 flex items-center justify-between text-xs text-gray-600">
+                        {/* Reorder Buttons */}
+                        <div className="flex items-center gap-0.5">
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => handleMoveImage(idx, 'left')}
+                            aria-label="Move photo left"
+                            className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                          >
+                            <ArrowLeft className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === images.length - 1}
+                            onClick={() => handleMoveImage(idx, 'right')}
+                            aria-label="Move photo right"
+                            className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                          >
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Set Cover Action */}
+                        {!isCover && (
+                          <button
+                            type="button"
+                            onClick={() => handleSetCover(idx)}
+                            className="text-[11px] font-medium text-primary-700 hover:text-primary-900 transition-colors"
+                          >
+                            Make Cover
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50/20 transition-all flex flex-col items-center justify-center space-y-2"
+              >
+                <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-gray-500">
+                  <ImageOff className="w-5 h-5 stroke-[1.5]" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-gray-800">No photos added yet</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5">
+                    Click to browse and upload multiple photos (auto-compressed to ~150KB WebP)
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Direct Image URL input as fallback */}
-            <div>
+            <div className="pt-2">
               <label htmlFor="product-image-url" className="block text-xs text-gray-500 mb-1">
-                Or enter image URL directly:
+                Or add photo via direct URL:
               </label>
-              <input
-                id="product-image-url"
-                type="url"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://..."
-                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-gray-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 text-sm outline-none transition-colors"
-              />
+              <div className="flex gap-2">
+                <input
+                  id="product-image-url"
+                  type="url"
+                  value={newUrlInput}
+                  onChange={(e) => setNewUrlInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddUrl();
+                    }
+                  }}
+                  placeholder="https://..."
+                  className="flex-1 min-h-[38px] px-3 py-1.5 rounded-lg border border-gray-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 text-xs outline-none transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddUrl}
+                  disabled={!newUrlInput.trim()}
+                  className="px-3.5 py-1.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold disabled:opacity-40 transition-colors flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add</span>
+                </button>
+              </div>
             </div>
           </div>
 
