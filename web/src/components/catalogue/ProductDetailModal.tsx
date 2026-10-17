@@ -6,6 +6,7 @@ import { useCart } from '@/hooks/useCart';
 import { useToast } from '@/hooks/useToast';
 import { getProductImages } from '@/utils/productImages';
 import { env } from '@/config/env';
+import { StockBadge } from '@/components/common/StockBadge';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -327,29 +328,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             {/* Right: Details & Action */}
             <div className="p-6 sm:p-8 flex flex-col justify-between">
               <div className="space-y-4">
-                {/* Category, SKU & Stock Status Badge */}
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <div className="flex items-center gap-2 text-[11px] font-sans tracking-[0.15em] uppercase text-muted">
-                    {product.category && <span>{product.category}</span>}
-                    {product.category && product.sku && <span>•</span>}
-                    {product.sku && <span>{product.sku}</span>}
-                  </div>
-
-                  {product.stock_status === 'out_of_stock' && (
-                    <span className="px-2 py-0.5 rounded-[2px] bg-stone-900 text-ivory text-[10px] font-sans font-medium tracking-wider uppercase">
-                      Sold Out
-                    </span>
-                  )}
-                  {product.stock_status === 'made_to_order' && (
-                    <span className="px-2 py-0.5 rounded-[2px] bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-sans font-medium tracking-wider uppercase">
-                      Made to Order
-                    </span>
-                  )}
-                  {(!product.stock_status || product.stock_status === 'in_stock') && (
-                    <span className="px-2 py-0.5 rounded-[2px] bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-sans font-medium tracking-wider uppercase">
-                      In Stock
-                    </span>
-                  )}
+                {/* Category, SKU & Stock Status Badge (inline next to product code, with pr-12 to prevent overlapping close X) */}
+                <div className="flex items-center gap-2 text-[11px] font-sans tracking-[0.15em] uppercase text-muted pr-12 flex-wrap">
+                  {product.category && <span>{product.category}</span>}
+                  {product.category && product.sku && <span>•</span>}
+                  {product.sku && <span className="font-mono text-ink/80">{product.sku}</span>}
+                  <StockBadge status={product.stock_status} />
                 </div>
 
                 {/* Name in Jost Bold */}

@@ -2,6 +2,7 @@ import React from 'react';
 import { Edit2, Trash2, Eye, EyeOff, ImageOff, Layers } from 'lucide-react';
 import type { Product } from '@/types/database';
 import { formatInrPrice } from '@/utils/formatters';
+import { StockBadge } from '@/components/common/StockBadge';
 
 interface ProductListTableProps {
   products: Product[];
@@ -10,30 +11,6 @@ interface ProductListTableProps {
   onToggleActive: (product: Product) => Promise<void>;
   togglingId?: string | null;
 }
-
-const renderStockBadge = (status?: string) => {
-  switch (status) {
-    case 'made_to_order':
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
-          Made to Order
-        </span>
-      );
-    case 'out_of_stock':
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-rose-50 text-rose-700 border border-rose-200">
-          Out of Stock
-        </span>
-      );
-    case 'in_stock':
-    default:
-      return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-          In Stock
-        </span>
-      );
-  }
-};
 
 export const ProductListTable: React.FC<ProductListTableProps> = ({
   products,
@@ -149,7 +126,7 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({
                         )}
                         <span>{product.active ? 'Active' : 'Hidden'}</span>
                       </button>
-                      {renderStockBadge(product.stock_status)}
+                      <StockBadge status={product.stock_status} />
                     </div>
                   </td>
 
@@ -219,7 +196,7 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({
                     <span className="text-[10px] font-sans font-medium px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 capitalize border border-stone-200">
                       {product.category || 'other'}
                     </span>
-                    {renderStockBadge(product.stock_status)}
+                    <StockBadge status={product.stock_status} />
                   </div>
                   <h3 className="font-sans font-semibold text-ink text-base line-clamp-2">{product.name}</h3>
                   {product.description && (

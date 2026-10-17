@@ -5,6 +5,7 @@ import { formatInrPrice } from '@/utils/formatters';
 import { useCart } from '@/hooks/useCart';
 import { useToast } from '@/hooks/useToast';
 import { getProductImages, getPrimaryImage, getSecondaryImage } from '@/utils/productImages';
+import { StockBadge } from '@/components/common/StockBadge';
 
 interface ProductCardProps {
   product: Product;
@@ -93,15 +94,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   />
                 )}
 
-                {/* Stock Status Badge */}
+                {/* Sold Out Image Overlay Badge */}
                 {product.stock_status === 'out_of_stock' && (
                   <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-[2px] bg-stone-900/90 text-ivory text-[9px] font-sans font-medium tracking-widest uppercase shadow-xs">
                     Sold Out
-                  </span>
-                )}
-                {product.stock_status === 'made_to_order' && (
-                  <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-[2px] bg-ivory/95 text-oxblood text-[9px] font-sans font-medium tracking-widest uppercase shadow-xs border border-gold/40">
-                    Made to Order
                   </span>
                 )}
 
@@ -138,12 +134,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       {/* Card Content */}
       <div className="pt-3.5 pb-1 flex-1 flex flex-col justify-between">
         <div>
-          {/* Tiny muted SKU with no pill/background */}
-          {product.sku && (
-            <span className="text-[11px] font-sans tracking-[0.12em] text-muted block mb-1 uppercase">
-              {product.sku}
-            </span>
-          )}
+          {/* SKU & Stock Status Badge */}
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            {product.sku && (
+              <span className="text-[11px] font-sans tracking-[0.12em] text-muted uppercase">
+                {product.sku}
+              </span>
+            )}
+            <StockBadge status={product.stock_status} />
+          </div>
 
           {/* Product Name in Jost Bold */}
           <h3
