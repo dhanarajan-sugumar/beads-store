@@ -7,6 +7,7 @@
 
 export type ProductCategory = 'necklace' | 'bracelet' | 'other';
 export type StockStatus = 'in_stock' | 'made_to_order' | 'out_of_stock';
+export type OrderStatus = 'new' | 'contacted' | 'paid' | 'shipped' | 'cancelled';
 
 export type Product = {
   id: string;
@@ -22,6 +23,30 @@ export type Product = {
   sku: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type Order = {
+  id: string;
+  order_ref: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_address: string;
+  total_amount: number;
+  status: OrderStatus;
+  created_at: string;
+  updated_at: string;
+};
+
+export type OrderItem = {
+  id: string;
+  order_id: string;
+  product_id: string | null;
+  product_title: string;
+  product_sku: string | null;
+  unit_price: number;
+  quantity: number;
+  subtotal: number;
+  created_at: string;
 };
 
 export type AdminUser = {
@@ -72,6 +97,58 @@ export type Database = {
         };
         Update: {
           user_id?: string;
+        };
+        Relationships: [];
+      };
+      orders: {
+        Row: Order;
+        Insert: {
+          id?: string;
+          order_ref: string;
+          customer_name: string;
+          customer_phone: string;
+          customer_address: string;
+          total_amount: number;
+          status?: OrderStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_ref?: string;
+          customer_name?: string;
+          customer_phone?: string;
+          customer_address?: string;
+          total_amount?: number;
+          status?: OrderStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      order_items: {
+        Row: OrderItem;
+        Insert: {
+          id?: string;
+          order_id: string;
+          product_id?: string | null;
+          product_title: string;
+          product_sku?: string | null;
+          unit_price: number;
+          quantity: number;
+          subtotal: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_id?: string;
+          product_id?: string | null;
+          product_title?: string;
+          product_sku?: string | null;
+          unit_price?: number;
+          quantity?: number;
+          subtotal?: number;
+          created_at?: string;
         };
         Relationships: [];
       };

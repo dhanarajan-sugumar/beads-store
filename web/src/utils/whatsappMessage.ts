@@ -1,14 +1,21 @@
 import type { CartItem } from './cartStorage';
 import { formatInrPrice } from './formatters';
 
+export interface CustomerOrderDetails {
+  name: string;
+  phone: string;
+  address: string;
+}
+
 /**
- * Builds a clean, friendly WhatsApp message text summarizing the order with order reference code and item SKUs.
+ * Builds a clean, friendly WhatsApp message text summarizing the order with order reference code, customer details, and item SKUs.
  */
 export function buildWhatsAppOrderMessage(
   shopName: string,
   items: CartItem[],
   grandTotal: number,
-  refCode?: string
+  refCode?: string,
+  customerDetails?: CustomerOrderDetails
 ): string {
   const lines: string[] = [];
 
@@ -23,6 +30,15 @@ export function buildWhatsAppOrderMessage(
       year: 'numeric',
     })}`
   );
+
+  if (customerDetails) {
+    lines.push('');
+    lines.push('*Customer Details:*');
+    if (customerDetails.name) lines.push(`• Name: ${customerDetails.name.trim()}`);
+    if (customerDetails.phone) lines.push(`• Phone: ${customerDetails.phone.trim()}`);
+    if (customerDetails.address) lines.push(`• Delivery Address: ${customerDetails.address.trim()}`);
+  }
+
   lines.push('');
   lines.push('*Items Ordered:*');
 

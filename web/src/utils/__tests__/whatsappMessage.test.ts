@@ -68,6 +68,25 @@ describe('whatsappMessage', () => {
     expect(message).toContain('Includes Made-to-Order handcrafted piece(s)');
   });
 
+  it('includes Customer Details section when customerDetails is provided', () => {
+    const message = buildWhatsAppOrderMessage(
+      'Madhis Handcrafts',
+      mockItems,
+      2297,
+      'MH-482190',
+      {
+        name: 'Priya Sharma',
+        phone: '9876543210',
+        address: '12B, Palm Grove Apts, Indiranagar, Bengaluru - 560038',
+      }
+    );
+    expect(message).toContain('*Customer Details:*');
+    expect(message).toContain('• Name: Priya Sharma');
+    expect(message).toContain('• Phone: 9876543210');
+    expect(message).toContain('• Delivery Address: 12B, Palm Grove Apts, Indiranagar, Bengaluru - 560038');
+    expect(message).toContain('*Order Ref:* MH-482190');
+  });
+
   it('generates correct wa.me link with encoded text', () => {
     const url = getWhatsAppShareUrl('Hello Madhis Handcrafts');
     expect(url).toBe('https://wa.me/?text=Hello%20Madhis%20Handcrafts');
