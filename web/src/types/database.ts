@@ -6,6 +6,7 @@
  */
 
 export type ProductCategory = 'necklace' | 'bracelet' | 'other';
+export type StockStatus = 'in_stock' | 'made_to_order' | 'out_of_stock';
 
 export type Product = {
   id: string;
@@ -15,6 +16,7 @@ export type Product = {
   image_url: string | null;
   images?: string[];
   active: boolean;
+  stock_status?: StockStatus;
   sort_order: number;
   category: ProductCategory;
   sku: string | null;
@@ -39,6 +41,7 @@ export type Database = {
           image_url?: string | null;
           images?: string[];
           active?: boolean;
+          stock_status?: StockStatus;
           sort_order?: number;
           category?: ProductCategory;
           sku?: string | null;
@@ -53,6 +56,7 @@ export type Database = {
           image_url?: string | null;
           images?: string[];
           active?: boolean;
+          stock_status?: StockStatus;
           sort_order?: number;
           category?: ProductCategory;
           sku?: string | null;

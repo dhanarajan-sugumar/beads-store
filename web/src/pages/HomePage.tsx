@@ -4,6 +4,8 @@ import { env } from '@/config/env';
 import { useProducts } from '@/hooks/useProducts';
 import { ProductGrid } from '@/components/catalogue/ProductGrid';
 import { CategoryFilter, FilterCategory } from '@/components/catalogue/CategoryFilter';
+import { SearchSortBar } from '@/components/catalogue/SearchSortBar';
+import { filterProducts, sortProducts, SortOption } from '@/utils/searchSort';
 import type { Product } from '@/types/database';
 
 interface HomePageProps {
@@ -14,6 +16,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onAddToCart }) => {
   const isEnvConfigured = Boolean(env.supabaseUrl && env.supabasePublishableKey);
   const { products, loading, error, refetch } = useProducts();
   const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('featured');
 
   // Compute item counts for each category pill
   const counts = useMemo(() => {
@@ -25,14 +29,16 @@ export const HomePage: React.FC<HomePageProps> = ({ onAddToCart }) => {
     };
   }, [products]);
 
-  // Filter products by selected pill
+  // Filter and sort products
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'all') return products;
-    if (selectedCategory === 'other') {
-      return products.filter((p) => p.category !== 'necklace' && p.category !== 'bracelet');
-    }
-    return products.filter((p) => p.category === selectedCategory);
-  }, [products, selectedCategory]);
+    const filtered = filterProducts(products, searchQuery, selectedCategory);
+    return sortProducts(filtered, sortBy);
+  }, [products, searchQuery, selectedCategory, sortBy]);
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('all');
+  };
 
   return (
     <div>
@@ -66,6 +72,18 @@ export const HomePage: React.FC<HomePageProps> = ({ onAddToCart }) => {
 
       {/* Catalogue Grid Section */}
       <section aria-label="Product collection">
+        {/* Search & Sort Controls */}
+        {!loading && !error && products.length > 0 && (
+          <SearchSortBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            resultCount={filteredProducts.length}
+            totalCount={products.length}
+          />
+        )}
+
         {/* Category Tabs Filter - Sticky under header */}
         {!loading && !error && products.length > 0 && (
           <CategoryFilter
@@ -81,6 +99,14 @@ export const HomePage: React.FC<HomePageProps> = ({ onAddToCart }) => {
           error={error}
           onRetry={refetch}
           onAddToCart={onAddToCart}
+          emptyTitle={searchQuery.trim() ? 'No matching jewellery found' : 'No pieces found'}
+          emptyDescription={
+            searchQuery.trim()
+              ? `We could not find any piece matching "${searchQuery.trim()}". Try searching for a different keyword or view our full collection.`
+              : 'Our artisans are crafting new designs. Please check back soon.'
+          }
+          emptyActionLabel={searchQuery.trim() || selectedCategory !== 'all' ? 'Reset Filters' : undefined}
+          onEmptyAction={handleResetFilters}
         />
       </section>
     </div>

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Plus, Minus, ImageOff, Maximize2, ShoppingBag, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
+import { X, Plus, Minus, ImageOff, Maximize2, ShoppingBag, ChevronLeft, ChevronRight, ZoomIn, MessageCircle } from 'lucide-react';
 import type { Product } from '@/types/database';
 import { formatInrPrice } from '@/utils/formatters';
 import { useCart } from '@/hooks/useCart';
 import { useToast } from '@/hooks/useToast';
 import { getProductImages } from '@/utils/productImages';
+import { env } from '@/config/env';
+import { StockBadge } from '@/components/common/StockBadge';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -326,11 +328,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             {/* Right: Details & Action */}
             <div className="p-6 sm:p-8 flex flex-col justify-between">
               <div className="space-y-4">
-                {/* Category & SKU */}
-                <div className="flex items-center gap-2 text-[11px] font-sans tracking-[0.15em] uppercase text-muted">
+                {/* Category, SKU & Stock Status Badge (inline next to product code, with pr-12 to prevent overlapping close X) */}
+                <div className="flex items-center gap-2 text-[11px] font-sans tracking-[0.15em] uppercase text-muted pr-12 flex-wrap">
                   {product.category && <span>{product.category}</span>}
                   {product.category && product.sku && <span>•</span>}
-                  {product.sku && <span>{product.sku}</span>}
+                  {product.sku && <span className="font-mono text-ink/80">{product.sku}</span>}
+                  <StockBadge status={product.stock_status} />
                 </div>
 
                 {/* Name in Jost Bold */}
@@ -360,11 +363,48 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     </p>
                   </div>
                 )}
+
+                {/* Stock Status Guidance Note */}
+                {product.stock_status === 'made_to_order' && (
+                  <div className="p-3 bg-amber-50/70 border border-amber-200/70 rounded-[2px] text-xs font-sans space-y-0.5">
+                    <p className="font-semibold text-amber-900 flex items-center gap-1.5">
+                      <span>✨</span> Handcrafted on Order
+                    </p>
+                    <p className="text-[11px] text-amber-800/90 leading-relaxed">
+                      Each piece is individually handcrafted for you. Dispatches in 2–3 business days.
+                    </p>
+                  </div>
+                )}
+                {product.stock_status === 'out_of_stock' && (
+                  <div className="p-3 bg-stone-100 border border-stone-200 rounded-[2px] text-xs font-sans space-y-1">
+                    <p className="font-semibold text-stone-900">Currently Sold Out</p>
+                    <p className="text-[11px] text-stone-600 leading-relaxed">
+                      This piece is temporarily unavailable. Feel free to message us on WhatsApp to check when it will be restocked or to request a custom made piece.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Bottom Actions */}
               <div className="pt-6 mt-6 border-t border-gold/30">
-                {quantityInCart === 0 ? (
+                {product.stock_status === 'out_of_stock' ? (
+                  <div className="space-y-2">
+                    <a
+                      href={`https://wa.me/${(env.whatsappNumber || '919944717970').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                        `Hi ${env.shopName || 'Madhis Handcrafts'}, I am interested in ${product.name}${product.sku ? ` (${product.sku})` : ''} on your website, but saw it is sold out. Could you let me know if it can be restocked or made to order?`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full min-h-[44px] px-6 py-2.5 rounded-[2px] bg-emerald-700 text-white hover:bg-emerald-800 text-xs font-sans font-medium tracking-[0.15em] uppercase transition-colors shadow-xs flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-700"
+                    >
+                      <MessageCircle className="w-4 h-4 stroke-[1.5]" aria-hidden="true" />
+                      <span>Inquire on WhatsApp</span>
+                    </a>
+                    <p className="text-center text-[11px] text-muted font-sans">
+                      We craft custom orders upon request
+                    </p>
+                  </div>
+                ) : quantityInCart === 0 ? (
                   <button
                     type="button"
                     onClick={handleAddToCart}

@@ -5,6 +5,7 @@ import { formatInrPrice } from '@/utils/formatters';
 import { useCart } from '@/hooks/useCart';
 import { useToast } from '@/hooks/useToast';
 import { getProductImages, getPrimaryImage, getSecondaryImage } from '@/utils/productImages';
+import { StockBadge } from '@/components/common/StockBadge';
 
 interface ProductCardProps {
   product: Product;
@@ -93,6 +94,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   />
                 )}
 
+                {/* Sold Out Image Overlay Badge */}
+                {product.stock_status === 'out_of_stock' && (
+                  <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-[2px] bg-stone-900/90 text-ivory text-[9px] font-sans font-medium tracking-widest uppercase shadow-xs">
+                    Sold Out
+                  </span>
+                )}
+
                 {/* Multi-photo indicator pill */}
                 {imagesList.length > 1 && (
                   <span className="absolute bottom-2 left-2 z-10 px-1.5 py-0.5 rounded-[2px] bg-ivory/90 text-ink text-[9px] font-sans tracking-widest uppercase shadow-xs border border-gold/30">
@@ -126,12 +134,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       {/* Card Content */}
       <div className="pt-3.5 pb-1 flex-1 flex flex-col justify-between">
         <div>
-          {/* Tiny muted SKU with no pill/background */}
-          {product.sku && (
-            <span className="text-[11px] font-sans tracking-[0.12em] text-muted block mb-1 uppercase">
-              {product.sku}
-            </span>
-          )}
+          {/* SKU & Stock Status Badge */}
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            {product.sku && (
+              <span className="text-[11px] font-sans tracking-[0.12em] text-muted uppercase">
+                {product.sku}
+              </span>
+            )}
+            <StockBadge status={product.stock_status} />
+          </div>
 
           {/* Product Name in Jost Bold */}
           <h3
@@ -149,9 +160,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         </div>
 
-        {/* Action Button: Add to order or Stepper */}
+        {/* Action Button: Add to order, Stepper, or Sold Out */}
         <div className="mt-2.5">
-          {quantityInCart === 0 ? (
+          {product.stock_status === 'out_of_stock' ? (
+            <button
+              type="button"
+              disabled
+              aria-label={`${product.name} is sold out`}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full min-h-[44px] px-3 py-2 rounded-[2px] border border-stone-200 bg-stone-100 text-stone-400 text-[12px] font-sans font-medium tracking-[0.15em] uppercase cursor-not-allowed select-none flex items-center justify-center"
+            >
+              Sold Out
+            </button>
+          ) : quantityInCart === 0 ? (
             <button
               type="button"
               onClick={handleAddClick}

@@ -2,6 +2,7 @@ import React from 'react';
 import { Edit2, Trash2, Eye, EyeOff, ImageOff, Layers } from 'lucide-react';
 import type { Product } from '@/types/database';
 import { formatInrPrice } from '@/utils/formatters';
+import { StockBadge } from '@/components/common/StockBadge';
 
 interface ProductListTableProps {
   products: Product[];
@@ -104,26 +105,29 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({
                     {product.sort_order}
                   </td>
 
-                  {/* Status Toggle */}
+                  {/* Status & Availability */}
                   <td className="px-4 py-3 whitespace-nowrap">
-                    <button
-                      type="button"
-                      disabled={isToggling}
-                      onClick={() => onToggleActive(product)}
-                      title={`Click to ${product.active ? 'hide' : 'show'} product`}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold min-h-[36px] transition-colors ${
-                        product.active
-                          ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                          : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
-                      }`}
-                    >
-                      {product.active ? (
-                        <Eye className="w-3.5 h-3.5" aria-hidden="true" />
-                      ) : (
-                        <EyeOff className="w-3.5 h-3.5" aria-hidden="true" />
-                      )}
-                      <span>{product.active ? 'Active' : 'Hidden'}</span>
-                    </button>
+                    <div className="flex flex-col gap-1.5 items-start">
+                      <button
+                        type="button"
+                        disabled={isToggling}
+                        onClick={() => onToggleActive(product)}
+                        title={`Click to ${product.active ? 'hide' : 'show'} product`}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold min-h-[32px] transition-colors ${
+                          product.active
+                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                            : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                        }`}
+                      >
+                        {product.active ? (
+                          <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+                        ) : (
+                          <EyeOff className="w-3.5 h-3.5" aria-hidden="true" />
+                        )}
+                        <span>{product.active ? 'Active' : 'Hidden'}</span>
+                      </button>
+                      <StockBadge status={product.stock_status} />
+                    </div>
                   </td>
 
                   {/* Edit and Delete Actions */}
@@ -192,6 +196,7 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({
                     <span className="text-[10px] font-sans font-medium px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 capitalize border border-stone-200">
                       {product.category || 'other'}
                     </span>
+                    <StockBadge status={product.stock_status} />
                   </div>
                   <h3 className="font-sans font-semibold text-ink text-base line-clamp-2">{product.name}</h3>
                   {product.description && (

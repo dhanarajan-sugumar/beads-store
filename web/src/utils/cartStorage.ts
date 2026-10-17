@@ -3,12 +3,15 @@
  * Guarantees no crashes even when localStorage is unavailable, disabled, or throws (e.g. Safari Private Mode / quota exceeded).
  */
 
+import type { StockStatus } from '@/types/database';
+
 export interface CartItem {
   id: string;
   name: string;
   price_inr: number;
   image_url: string | null;
   sku?: string | null;
+  stock_status?: StockStatus;
   quantity: number;
 }
 

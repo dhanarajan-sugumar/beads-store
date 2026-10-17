@@ -147,9 +147,16 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenPdfShare }) => {
                           <Trash2 className="w-4 h-4 stroke-[1.5]" aria-hidden="true" />
                         </button>
                       </div>
-                      <p className="text-xs font-sans text-muted">
-                        {formatInrPrice(item.price_inr)} each
-                      </p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-xs font-sans text-muted">
+                          {formatInrPrice(item.price_inr)} each
+                        </p>
+                        {item.stock_status === 'made_to_order' && (
+                          <span className="text-[9px] font-sans font-medium text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded-[2px] border border-amber-200/60 uppercase tracking-wider">
+                            Made to Order
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between mt-2 pt-2 border-t border-gold/15">
