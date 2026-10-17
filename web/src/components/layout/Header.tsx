@@ -25,14 +25,11 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Top Announcement & Utility Bar */}
       <div className="bg-slate-900 text-stone-200 text-xs py-1.5 px-4 sm:px-6 lg:px-8 border-b border-slate-800">
         <div className="max-w-[1200px] mx-auto flex items-center justify-between gap-4">
-          {/* Left/Center: Handcrafted Announcement */}
+          {/* Left/Center: Store Announcement */}
           <div className="flex items-center gap-2 truncate">
             <span className="text-gold text-[12px] select-none">✨</span>
-            <span className="font-serif italic text-white text-[13px] sm:text-sm tracking-wide truncate">
-              Each piece, made by hand.
-            </span>
-            <span className="hidden sm:inline text-stone-400 text-xs font-sans">
-              • Handmade bead jewellery
+            <span className="text-stone-300 text-xs font-sans tracking-wide truncate">
+              Bespoke orders & custom designs available via WhatsApp
             </span>
           </div>
 
@@ -75,8 +72,8 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="font-serif font-medium text-[20px] sm:text-[25px] md:text-[27px] tracking-[0.01em] text-slate-900 leading-tight">
                 {env.shopName}
               </span>
-              <span className="text-[10px] sm:text-[11px] font-sans font-medium tracking-[0.16em] uppercase text-gold leading-none mt-0.5">
-                Handmade Jewellery
+              <span className="font-serif italic font-medium text-[11px] sm:text-[13px] md:text-[14px] text-amber-900/90 tracking-wide leading-tight mt-0.5">
+                Each piece, made by hand. <span className="mx-0.5 text-amber-700/60">•</span> Handmade bead jewellery
               </span>
             </div>
           </Link>
