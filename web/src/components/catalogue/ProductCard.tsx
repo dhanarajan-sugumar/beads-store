@@ -93,6 +93,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   />
                 )}
 
+                {/* Stock Status Badge */}
+                {product.stock_status === 'out_of_stock' && (
+                  <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-[2px] bg-stone-900/90 text-ivory text-[9px] font-sans font-medium tracking-widest uppercase shadow-xs">
+                    Sold Out
+                  </span>
+                )}
+                {product.stock_status === 'made_to_order' && (
+                  <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-[2px] bg-ivory/95 text-oxblood text-[9px] font-sans font-medium tracking-widest uppercase shadow-xs border border-gold/40">
+                    Made to Order
+                  </span>
+                )}
+
                 {/* Multi-photo indicator pill */}
                 {imagesList.length > 1 && (
                   <span className="absolute bottom-2 left-2 z-10 px-1.5 py-0.5 rounded-[2px] bg-ivory/90 text-ink text-[9px] font-sans tracking-widest uppercase shadow-xs border border-gold/30">
@@ -149,9 +161,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         </div>
 
-        {/* Action Button: Add to order or Stepper */}
+        {/* Action Button: Add to order, Stepper, or Sold Out */}
         <div className="mt-2.5">
-          {quantityInCart === 0 ? (
+          {product.stock_status === 'out_of_stock' ? (
+            <button
+              type="button"
+              disabled
+              aria-label={`${product.name} is sold out`}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full min-h-[44px] px-3 py-2 rounded-[2px] border border-stone-200 bg-stone-100 text-stone-400 text-[12px] font-sans font-medium tracking-[0.15em] uppercase cursor-not-allowed select-none flex items-center justify-center"
+            >
+              Sold Out
+            </button>
+          ) : quantityInCart === 0 ? (
             <button
               type="button"
               onClick={handleAddClick}

@@ -12,6 +12,10 @@ interface ProductGridProps {
   error: string | null;
   onRetry?: () => void;
   onAddToCart?: (product: Product) => void;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  emptyActionLabel?: string;
+  onEmptyAction?: () => void;
 }
 
 export const ProductGrid: React.FC<ProductGridProps> = ({
@@ -20,6 +24,10 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
   error,
   onRetry,
   onAddToCart,
+  emptyTitle,
+  emptyDescription,
+  emptyActionLabel,
+  onEmptyAction,
 }) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -32,7 +40,14 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
   }
 
   if (products.length === 0) {
-    return <EmptyState />;
+    return (
+      <EmptyState
+        title={emptyTitle}
+        description={emptyDescription}
+        actionLabel={emptyActionLabel}
+        onAction={onEmptyAction}
+      />
+    );
   }
 
   return (

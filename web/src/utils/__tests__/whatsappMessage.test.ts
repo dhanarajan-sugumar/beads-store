@@ -51,6 +51,23 @@ describe('whatsappMessage', () => {
     expect(message).not.toContain('[');
   });
 
+  it('includes Made to Order label and note when cart contains made_to_order items', () => {
+    const itemsWithMto: CartItem[] = [
+      {
+        id: '1',
+        name: 'Custom Garnet Choker',
+        price_inr: 1599,
+        image_url: null,
+        sku: 'NL-205',
+        stock_status: 'made_to_order',
+        quantity: 1,
+      },
+    ];
+    const message = buildWhatsAppOrderMessage('Madhis Handcrafts', itemsWithMto, 1599);
+    expect(message).toContain('1. *[NL-205] Custom Garnet Choker (Made to Order)*');
+    expect(message).toContain('Includes Made-to-Order handcrafted piece(s)');
+  });
+
   it('generates correct wa.me link with encoded text', () => {
     const url = getWhatsAppShareUrl('Hello Madhis Handcrafts');
     expect(url).toBe('https://wa.me/?text=Hello%20Madhis%20Handcrafts');

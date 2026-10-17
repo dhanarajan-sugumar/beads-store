@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Upload, Loader2, ImageOff, RefreshCw, Trash2, Star, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import type { Product, ProductCategory } from '@/types/database';
+import type { Product, ProductCategory, StockStatus } from '@/types/database';
 import { compressImageToWebP } from '@/utils/imageCompressor';
 import { setCoverImage, moveImage } from '@/utils/productImages';
 
@@ -44,6 +44,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [category, setCategory] = useState<ProductCategory>('necklace');
   const [sku, setSku] = useState('');
   const [active, setActive] = useState<boolean>(true);
+  const [stockStatus, setStockStatus] = useState<StockStatus>('in_stock');
   const [images, setImages] = useState<string[]>([]);
   const [newUrlInput, setNewUrlInput] = useState<string>('');
 
@@ -64,6 +65,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setCategory(product.category || 'other');
       setSku(product.sku || '');
       setActive(product.active);
+      setStockStatus(product.stock_status || 'in_stock');
       const initialImages = (product.images && product.images.length > 0)
         ? product.images
         : (product.image_url ? [product.image_url] : []);
@@ -76,6 +78,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setCategory('necklace');
       setSku(generateRandomSku('necklace'));
       setActive(true);
+      setStockStatus('in_stock');
       setImages([]);
     }
     setNewUrlInput('');
@@ -212,6 +215,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         category,
         sku: sku.trim() || null,
         active,
+        stock_status: stockStatus,
         image_url: primaryImageUrl,
         images,
       };
@@ -380,19 +384,37 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             </div>
           </div>
 
-          {/* Active Status Checkbox */}
-          <div className="pt-1">
-            <label className="inline-flex items-center gap-3 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={active}
-                onChange={(e) => setActive(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-600"
-              />
-              <span className="text-sm font-medium text-gray-900">
-                Active in catalogue (publicly visible)
-              </span>
-            </label>
+          {/* Inventory Stock Status & Active Visibility */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+            <div>
+              <label htmlFor="product-stock-status" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                Stock / Availability *
+              </label>
+              <select
+                id="product-stock-status"
+                value={stockStatus}
+                onChange={(e) => setStockStatus(e.target.value as StockStatus)}
+                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-gray-300 bg-white focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 text-sm outline-none transition-colors"
+              >
+                <option value="in_stock">In Stock (Ready to dispatch)</option>
+                <option value="made_to_order">Made to Order (Crafted in 2-3 days)</option>
+                <option value="out_of_stock">Out of Stock (Sold Out)</option>
+              </select>
+            </div>
+
+            <div className="flex items-end pb-2.5">
+              <label className="inline-flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={active}
+                  onChange={(e) => setActive(e.target.checked)}
+                  className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-600"
+                />
+                <span className="text-sm font-medium text-gray-900">
+                  Active in catalogue (publicly visible)
+                </span>
+              </label>
+            </div>
           </div>
 
           {/* Multiple Images Upload & Gallery */}

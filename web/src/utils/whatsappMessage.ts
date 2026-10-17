@@ -26,17 +26,24 @@ export function buildWhatsAppOrderMessage(
   lines.push('');
   lines.push('*Items Ordered:*');
 
+  const hasMadeToOrder = items.some((item) => item.stock_status === 'made_to_order');
+
   items.forEach((item, index) => {
     const itemTotal = item.price_inr * item.quantity;
+    const isMto = item.stock_status === 'made_to_order';
     const nameWithSku = item.sku ? `[${item.sku}] ${item.name}` : item.name;
+    const displayName = isMto ? `${nameWithSku} (Made to Order)` : nameWithSku;
     lines.push(
-      `${index + 1}. *${nameWithSku}*` +
+      `${index + 1}. *${displayName}*` +
         `\n   Qty: ${item.quantity} × ${formatInrPrice(item.price_inr)} = ${formatInrPrice(itemTotal)}`
     );
   });
 
   lines.push('');
   lines.push(`*Grand Total: ${formatInrPrice(grandTotal)}*`);
+  if (hasMadeToOrder) {
+    lines.push('_(Includes Made-to-Order handcrafted piece(s) — ~2-3 days crafting time)_');
+  }
   lines.push('');
   lines.push('Please confirm availability and payment details!');
 
