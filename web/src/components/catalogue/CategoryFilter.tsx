@@ -29,7 +29,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   return (
     <nav
       aria-label="Product categories"
-      className="sticky top-16 sm:top-20 z-20 bg-ivory/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-gold/25 mb-4 sm:mb-6 transition-all"
+      className="sticky top-16 sm:top-20 z-20 bg-white/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-stone-200 mb-4 sm:mb-6 transition-all"
     >
       <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto pb-px no-scrollbar sm:justify-center">
         {categories.map((cat) => {
@@ -40,21 +40,21 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
               type="button"
               onClick={() => onSelectCategory(cat.id)}
               aria-pressed={isSelected}
-              className={`min-h-[44px] py-3 px-1 relative text-[11px] sm:text-xs font-sans tracking-[0.18em] uppercase transition-colors whitespace-nowrap flex items-center gap-1.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood ${
+              className={`min-h-[44px] py-3 px-1 relative text-[11px] sm:text-xs font-sans tracking-[0.16em] uppercase transition-colors whitespace-nowrap flex items-center gap-1.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood ${
                 isSelected
-                  ? 'text-ink font-medium'
-                  : 'text-muted hover:text-ink'
+                  ? 'text-slate-900 font-bold'
+                  : 'text-slate-500 hover:text-slate-900 font-medium'
               }`}
             >
               <span>{cat.label}</span>
-              <span className="text-[10px] sm:text-[11px] tracking-normal font-sans text-muted">
+              <span className={`text-[10px] sm:text-[11px] tracking-normal font-sans ${isSelected ? 'text-oxblood font-semibold' : 'text-slate-400'}`}>
                 ({cat.count})
               </span>
 
-              {/* 1px gold underline for active tab */}
+              {/* Bold active underline */}
               {isSelected && (
                 <span
-                  className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-gold"
+                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-oxblood"
                   aria-hidden="true"
                 />
               )}

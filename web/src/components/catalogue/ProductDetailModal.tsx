@@ -336,10 +336,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <StockBadge status={product.stock_status} />
                 </div>
 
-                {/* Name in Jost Bold */}
+                {/* Name in Cormorant Garamond Serif */}
                 <h2
                   id="product-modal-title"
-                  className="font-sans font-bold text-2xl sm:text-3xl text-ink leading-tight"
+                  className="font-serif font-medium text-2xl sm:text-3xl text-slate-900 leading-tight"
                 >
                   {product.name}
                 </h2>

@@ -2,7 +2,6 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import { FloatingWhatsAppButton } from '../common/FloatingWhatsAppButton';
 
 interface LayoutProps {
   cartItemCount?: number;
@@ -20,7 +19,6 @@ export const Layout: React.FC<LayoutProps> = ({
         <Outlet />
       </main>
       <Footer />
-      <FloatingWhatsAppButton />
     </div>
   );
 };
