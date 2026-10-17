@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, MessageCircle } from 'lucide-react';
+import { ShoppingBag, MessageCircle, Shield } from 'lucide-react';
 import { env } from '@/config/env';
 
 interface HeaderProps {
@@ -22,6 +22,40 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-2xs">
+      {/* Top Announcement & Utility Bar */}
+      <div className="bg-slate-900 text-stone-200 text-xs py-1.5 px-4 sm:px-6 lg:px-8 border-b border-slate-800">
+        <div className="max-w-[1200px] mx-auto flex items-center justify-between gap-4">
+          {/* Left/Center: Handcrafted Announcement */}
+          <div className="flex items-center gap-2 truncate">
+            <span className="text-gold text-[12px] select-none">✨</span>
+            <span className="font-serif italic text-white text-[13px] sm:text-sm tracking-wide truncate">
+              Each piece, made by hand.
+            </span>
+            <span className="hidden sm:inline text-stone-400 text-xs font-sans">
+              • Handmade bead jewellery
+            </span>
+          </div>
+
+          {/* Right: Quick Navigation to Catalogue / Admin */}
+          <div className="flex items-center gap-3 shrink-0 text-[11px] font-sans font-medium uppercase tracking-wider text-stone-300">
+            <Link
+              to="/"
+              className="hover:text-gold transition-colors py-0.5"
+            >
+              Catalogue
+            </Link>
+            <span className="text-stone-600" aria-hidden="true">•</span>
+            <Link
+              to="/admin"
+              className="hover:text-gold transition-colors py-0.5 flex items-center gap-1 text-stone-300 hover:text-white"
+            >
+              <Shield className="w-3 h-3 text-gold" />
+              <span>Admin</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20 gap-3">
           {/* Brand Logo & Wordmark */}

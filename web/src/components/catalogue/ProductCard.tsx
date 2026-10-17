@@ -144,9 +144,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <StockBadge status={product.stock_status} />
           </div>
 
-          {/* Product Name */}
+          {/* Product Name in Cormorant Garamond Serif */}
           <h3
-            className="font-sans font-bold text-slate-900 text-[16px] sm:text-[17px] tracking-tight leading-snug line-clamp-2 group-hover:text-oxblood transition-colors duration-200"
+            className="font-serif font-medium text-slate-900 text-[18px] sm:text-[19px] tracking-normal leading-snug line-clamp-2 min-h-[46px] flex items-start group-hover:text-oxblood transition-colors duration-200"
             title={product.name}
           >
             {product.name}
