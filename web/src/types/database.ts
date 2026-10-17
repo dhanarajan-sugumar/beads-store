@@ -49,6 +49,10 @@ export type OrderItem = {
   created_at: string;
 };
 
+export type OrderWithItems = Order & {
+  order_items: OrderItem[];
+};
+
 export type AdminUser = {
   user_id: string;
 };
