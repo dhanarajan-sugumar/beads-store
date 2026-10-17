@@ -7,31 +7,32 @@ export default {
   theme: {
     extend: {
       colors: {
-        ivory: '#FAF5EC',
-        ink: '#2B2623',
-        muted: '#7A7068',
+        ivory: '#FFFFFF', // Modern crisp luminous pearl white
+        surface: '#F8FAFC',
+        ink: '#0F172A', // Deep obsidian charcoal
+        muted: '#64748B',
         oxblood: {
-          DEFAULT: '#6B1F2A',
-          hover: '#541821',
-          light: '#852A37',
+          DEFAULT: '#881337', // Royal Garnet / Ruby
+          hover: '#700E2B',
+          light: '#9F1239',
         },
         gold: {
-          DEFAULT: '#B08D57',
-          light: '#C7A775',
-          dark: '#967443',
+          DEFAULT: '#D97706', // Polished Champagne Gold
+          light: '#F59E0B',
+          dark: '#B45309',
         },
-        dark: '#231F1D',
+        dark: '#0F172A',
         primary: {
-          50: '#FAF5EC',
-          100: '#F4E8EA',
-          200: '#E6C6CC',
-          300: '#D29AA5',
-          400: '#B46575',
-          500: '#8A3241',
-          600: '#6B1F2A', // Oxblood accent
-          700: '#541821',
-          800: '#3D1118',
-          900: '#231F1D',
+          50: '#FFF1F2',
+          100: '#FFE4E6',
+          200: '#FECDD3',
+          300: '#FDA4AF',
+          400: '#FB7185',
+          500: '#F43F5E',
+          600: '#881337',
+          700: '#700E2B',
+          800: '#4C0519',
+          900: '#0F172A',
         },
       },
       fontFamily: {
@@ -41,5 +42,5 @@ export default {
     },
   },
   plugins: [],
-}
+};
 

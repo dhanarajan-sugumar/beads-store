@@ -59,10 +59,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <article
       onClick={handleCardClick}
-      className="group flex flex-col cursor-pointer focus-within:ring-1 focus-within:ring-oxblood animate-fade-up"
+      className="group flex flex-col cursor-pointer focus-within:ring-2 focus-within:ring-oxblood rounded-2xl animate-fade-up"
     >
       {/* 4:5 Portrait Image Crop with slow hover zoom (scale 1.04, 600ms) */}
-      <div className="relative w-full aspect-[4/5] bg-stone-100/60 overflow-hidden rounded-[2px]">
+      <div className="relative w-full aspect-[4/5] bg-stone-100/40 overflow-hidden rounded-xl border border-stone-200/70 shadow-2xs group-hover:shadow-sm transition-all duration-300">
         {(() => {
           const primaryImage = getPrimaryImage(product);
           const secondaryImage = getSecondaryImage(product);
@@ -96,14 +96,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
                 {/* Sold Out Image Overlay Badge */}
                 {product.stock_status === 'out_of_stock' && (
-                  <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-[2px] bg-stone-900/90 text-ivory text-[9px] font-sans font-medium tracking-widest uppercase shadow-xs">
+                  <span className="absolute top-2.5 left-2.5 z-10 px-2.5 py-0.5 rounded-full bg-slate-900/90 text-white text-[10px] font-sans font-bold tracking-wider uppercase shadow-xs backdrop-blur-xs">
                     Sold Out
                   </span>
                 )}
 
                 {/* Multi-photo indicator pill */}
                 {imagesList.length > 1 && (
-                  <span className="absolute bottom-2 left-2 z-10 px-1.5 py-0.5 rounded-[2px] bg-ivory/90 text-ink text-[9px] font-sans tracking-widest uppercase shadow-xs border border-gold/30">
+                  <span className="absolute bottom-2.5 left-2.5 z-10 px-2 py-0.5 rounded-full bg-white/90 text-slate-800 text-[10px] font-sans font-semibold tracking-wider uppercase shadow-xs border border-stone-200 backdrop-blur-xs">
                     {imagesList.length} Photos
                   </span>
                 )}
@@ -123,52 +123,52 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         })()}
 
         {/* Subtle quick view label on desktop hover */}
-        <div className="absolute inset-0 bg-ink/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex items-center justify-center pointer-events-none">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-ivory/95 text-ink text-[11px] font-sans tracking-[0.1em] uppercase shadow-xs">
-            <Eye className="w-3 h-3 stroke-[1.5]" aria-hidden="true" />
-            View
+        <div className="absolute inset-0 bg-slate-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex items-center justify-center pointer-events-none">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 text-slate-900 text-[11px] font-sans font-semibold tracking-[0.08em] uppercase rounded-full shadow-sm">
+            <Eye className="w-3.5 h-3.5 stroke-[2]" aria-hidden="true" />
+            Quick View
           </span>
         </div>
       </div>
 
       {/* Card Content */}
-      <div className="pt-3.5 pb-1 flex-1 flex flex-col justify-between">
+      <div className="pt-3 pb-1 flex-1 flex flex-col justify-between">
         <div>
           {/* SKU & Stock Status Badge */}
-          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             {product.sku && (
-              <span className="text-[11px] font-sans tracking-[0.12em] text-muted uppercase">
+              <span className="text-[11px] font-sans font-semibold tracking-wider text-slate-400 uppercase">
                 {product.sku}
               </span>
             )}
             <StockBadge status={product.stock_status} />
           </div>
 
-          {/* Product Name in Jost Bold */}
+          {/* Product Name */}
           <h3
-            className="font-sans font-bold text-ink text-[16px] sm:text-[18px] tracking-tight leading-snug line-clamp-2 group-hover:text-oxblood transition-colors duration-200"
+            className="font-sans font-bold text-slate-900 text-[16px] sm:text-[17px] tracking-tight leading-snug line-clamp-2 group-hover:text-oxblood transition-colors duration-200"
             title={product.name}
           >
             {product.name}
           </h3>
 
-          {/* Price in Jost 15px oxblood */}
-          <div className="mt-1.5">
-            <span className="font-sans font-medium text-oxblood text-[15px]">
+          {/* Price */}
+          <div className="mt-1">
+            <span className="font-sans font-bold text-oxblood text-[16px] tabular-nums">
               {formatInrPrice(product.price_inr)}
             </span>
           </div>
         </div>
 
         {/* Action Button: Add to order, Stepper, or Sold Out */}
-        <div className="mt-2.5">
+        <div className="mt-3">
           {product.stock_status === 'out_of_stock' ? (
             <button
               type="button"
               disabled
               aria-label={`${product.name} is sold out`}
               onClick={(e) => e.stopPropagation()}
-              className="w-full min-h-[44px] px-3 py-2 rounded-[2px] border border-stone-200 bg-stone-100 text-stone-400 text-[12px] font-sans font-medium tracking-[0.15em] uppercase cursor-not-allowed select-none flex items-center justify-center"
+              className="w-full min-h-[42px] px-3 py-2 rounded-xl border border-stone-200 bg-stone-100 text-stone-400 text-[11px] font-sans font-semibold tracking-[0.12em] uppercase cursor-not-allowed select-none flex items-center justify-center"
             >
               Sold Out
             </button>
@@ -177,34 +177,35 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               type="button"
               onClick={handleAddClick}
               aria-label={`Add ${product.name} to order`}
-              className="w-full min-h-[44px] px-3 py-2 rounded-[2px] border border-oxblood text-oxblood hover:bg-oxblood hover:text-ivory text-[12px] font-sans font-medium tracking-[0.15em] uppercase transition-colors duration-300 flex items-center justify-center focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
+              className="w-full min-h-[42px] px-4 py-2 rounded-xl bg-oxblood hover:bg-oxblood-hover text-white text-[12px] font-sans font-semibold tracking-[0.12em] uppercase shadow-2xs hover:shadow-xs active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-oxblood"
             >
-              Add to order
+              <Plus className="w-3.5 h-3.5 stroke-[2]" aria-hidden="true" />
+              <span>Add to order</span>
             </button>
           ) : (
             <div
-              className="w-full min-h-[44px] rounded-[2px] border border-oxblood/80 flex items-center justify-between px-1"
+              className="w-full min-h-[42px] rounded-xl border border-oxblood/30 bg-oxblood/5 flex items-center justify-between px-1.5 shadow-2xs"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 type="button"
                 onClick={handleDecrement}
                 aria-label={`Decrease quantity of ${product.name}`}
-                className="min-w-[40px] min-h-[44px] flex items-center justify-center text-oxblood hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-oxblood hover:bg-oxblood/10 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
               >
                 <Minus className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
               <span
-                className="font-sans font-medium text-xs sm:text-sm text-ink px-2 min-w-[24px] text-center"
+                className="font-sans font-bold text-xs sm:text-sm text-slate-900 px-2 min-w-[24px] text-center"
                 aria-label={`Current quantity: ${quantityInCart}`}
               >
-                {quantityInCart}
+                {quantityInCart} in bag
               </span>
               <button
                 type="button"
                 onClick={handleIncrement}
                 aria-label={`Increase quantity of ${product.name}`}
-                className="min-w-[40px] min-h-[44px] flex items-center justify-center text-oxblood hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-oxblood hover:bg-oxblood/10 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood"
               >
                 <Plus className="w-3.5 h-3.5" aria-hidden="true" />
               </button>

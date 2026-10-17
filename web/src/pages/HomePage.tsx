@@ -60,18 +60,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onAddToCart }) => {
         </div>
       )}
 
-      {/* Quiet-Luxury Intro */}
-      <section className="text-center pt-1 pb-3 sm:pt-2 sm:pb-4">
-        <p className="text-[10px] sm:text-[11px] font-sans font-medium tracking-[0.22em] uppercase text-gold mb-1 select-none">
-          HANDMADE BEAD JEWELLERY
-        </p>
-        <h1 className="font-serif italic font-normal text-2xl sm:text-3xl md:text-4xl text-ink leading-tight">
-          Each piece, made by hand.
-        </h1>
-      </section>
-
       {/* Catalogue Grid Section */}
-      <section aria-label="Product collection">
+      <section aria-label="Product collection" className="pt-2 sm:pt-3">
         {/* Search & Sort Controls */}
         {!loading && !error && products.length > 0 && (
           <SearchSortBar

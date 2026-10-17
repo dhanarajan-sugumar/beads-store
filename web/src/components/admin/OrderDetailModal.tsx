@@ -143,7 +143,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     onClick={() => handleApplyStatusChange(status)}
                     className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
                       isActive
-                        ? 'bg-ink text-paper border-ink shadow-2xs'
+                        ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
                         : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400 hover:bg-stone-100'
                     } disabled:opacity-50`}
                   >

@@ -36,7 +36,7 @@ export const SearchSortBar: React.FC<SearchSortBarProps> = ({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search by name, SKU, gemstone, material..."
             aria-label="Search catalogue"
-            className="w-full min-h-[44px] pl-10 pr-10 py-2 bg-ivory/80 border border-gold/30 hover:border-gold/60 focus:border-oxblood focus:ring-1 focus:ring-oxblood rounded-[2px] text-xs font-sans text-ink placeholder:text-muted/60 transition-colors outline-none"
+            className="w-full min-h-[44px] pl-10 pr-10 py-2 bg-stone-50/60 hover:bg-stone-50 focus:bg-white border border-stone-200 hover:border-stone-300 focus:border-oxblood focus:ring-2 focus:ring-oxblood/10 rounded-xl text-xs font-sans text-slate-900 placeholder:text-slate-400 transition-all outline-none shadow-2xs"
           />
 
           {searchQuery && (
@@ -44,7 +44,7 @@ export const SearchSortBar: React.FC<SearchSortBarProps> = ({
               type="button"
               onClick={() => onSearchChange('')}
               aria-label="Clear search"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted hover:text-ink transition-colors min-w-[40px] justify-center"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-900 transition-colors min-w-[40px] justify-center"
             >
               <X className="w-4 h-4" aria-hidden="true" />
             </button>
@@ -55,9 +55,9 @@ export const SearchSortBar: React.FC<SearchSortBarProps> = ({
         <div className="flex items-center gap-2 shrink-0">
           <label
             htmlFor="catalogue-sort"
-            className="text-[11px] font-sans uppercase tracking-[0.15em] text-muted hidden md:inline-flex items-center gap-1 select-none"
+            className="text-[11px] font-sans uppercase tracking-[0.15em] text-slate-500 hidden md:inline-flex items-center gap-1 select-none font-semibold"
           >
-            <ArrowUpDown className="w-3 h-3 text-gold" aria-hidden="true" />
+            <ArrowUpDown className="w-3 h-3 text-oxblood" aria-hidden="true" />
             <span>Sort By:</span>
           </label>
           <div className="relative min-w-[170px] sm:min-w-[190px]">
@@ -66,7 +66,7 @@ export const SearchSortBar: React.FC<SearchSortBarProps> = ({
               value={sortBy}
               onChange={(e) => onSortChange(e.target.value as SortOption)}
               aria-label="Sort products by"
-              className="w-full min-h-[44px] px-3.5 py-2 bg-ivory/80 border border-gold/30 hover:border-gold/60 focus:border-oxblood focus:ring-1 focus:ring-oxblood rounded-[2px] text-xs font-sans tracking-wider uppercase text-ink transition-colors outline-none cursor-pointer appearance-none pr-8"
+              className="w-full min-h-[44px] px-3.5 py-2 bg-stone-50/60 hover:bg-stone-50 focus:bg-white border border-stone-200 hover:border-stone-300 focus:border-oxblood focus:ring-2 focus:ring-oxblood/10 rounded-xl text-xs font-sans tracking-wider uppercase text-slate-800 transition-all outline-none cursor-pointer appearance-none pr-8 shadow-2xs font-medium"
             >
               <option value="featured">Featured Collection</option>
               <option value="price-asc">Price: Low to High</option>

@@ -398,15 +398,15 @@ export const AdminPage: React.FC = () => {
           onClick={() => setActiveTab('products')}
           className={`min-h-[40px] px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
             activeTab === 'products'
-              ? 'bg-ink text-paper shadow-2xs'
-              : 'text-stone-600 hover:bg-stone-100 hover:text-ink'
+              ? 'bg-slate-900 text-white shadow-2xs'
+              : 'text-stone-600 hover:bg-stone-100 hover:text-slate-900'
           }`}
         >
-          <Package className="w-4 h-4" />
-          <span>Products</span>
+          <Package className="w-4 h-4 text-white" />
+          <span className="text-white">Products</span>
           <span
             className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-              activeTab === 'products' ? 'bg-white/20 text-white' : 'bg-stone-200 text-stone-700'
+              activeTab === 'products' ? 'bg-white/25 text-white' : 'bg-stone-200 text-stone-700'
             }`}
           >
             {products.length}
@@ -418,12 +418,12 @@ export const AdminPage: React.FC = () => {
           onClick={() => setActiveTab('orders')}
           className={`min-h-[40px] px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
             activeTab === 'orders'
-              ? 'bg-ink text-paper shadow-2xs'
-              : 'text-stone-600 hover:bg-stone-100 hover:text-ink'
+              ? 'bg-slate-900 text-white shadow-2xs'
+              : 'text-stone-600 hover:bg-stone-100 hover:text-slate-900'
           }`}
         >
-          <ShoppingBag className="w-4 h-4" />
-          <span>Orders</span>
+          <ShoppingBag className="w-4 h-4 text-white" />
+          <span className="text-white">Orders</span>
           {newOrdersCount > 0 ? (
             <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-500 text-white animate-pulse">
               {newOrdersCount} new
@@ -431,7 +431,7 @@ export const AdminPage: React.FC = () => {
           ) : (
             <span
               className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-                activeTab === 'orders' ? 'bg-white/20 text-white' : 'bg-stone-200 text-stone-700'
+                activeTab === 'orders' ? 'bg-white/25 text-white' : 'bg-stone-200 text-stone-700'
               }`}
             >
               {orders.length}
@@ -540,7 +540,7 @@ export const AdminPage: React.FC = () => {
                   onClick={() => setSelectedOrderStatusFilter(tab.value)}
                   className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border flex items-center gap-1.5 ${
                     isSelected
-                      ? 'bg-ink text-paper border-ink shadow-2xs'
+                      ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
                       : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50 hover:text-ink'
                   }`}
                 >
