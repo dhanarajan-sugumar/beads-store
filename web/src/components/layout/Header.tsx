@@ -63,7 +63,7 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <div className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 md:w-[72px] md:h-[72px] shrink-0 flex items-center justify-center">
               <img
-                src="/logo.png"
+                src="/logo.png?v=2"
                 alt={`${env.shopName} Crest`}
                 className="w-full h-full object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.06)] transition-transform duration-200 group-hover:scale-105"
               />
