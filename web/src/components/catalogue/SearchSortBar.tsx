@@ -26,7 +26,7 @@ export const SearchSortBar: React.FC<SearchSortBarProps> = ({
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Search Input Box */}
         <div className="relative flex-1 min-w-[240px]">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted/70">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#7A6E65]">
             <Search className="w-4 h-4 stroke-[1.5]" aria-hidden="true" />
           </div>
 
@@ -36,7 +36,7 @@ export const SearchSortBar: React.FC<SearchSortBarProps> = ({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search by name, SKU, gemstone, material..."
             aria-label="Search catalogue"
-            className="w-full min-h-[44px] pl-10 pr-10 py-2 bg-stone-50/60 hover:bg-stone-50 focus:bg-white border border-stone-200 hover:border-stone-300 focus:border-oxblood focus:ring-2 focus:ring-oxblood/10 rounded-xl text-xs font-sans text-slate-900 placeholder:text-slate-400 transition-all outline-none shadow-2xs"
+            className="w-full min-h-[42px] pl-10 pr-10 py-2 bg-white hover:border-[#CFC4B5] focus:border-[#68273D] border border-[#E0D7CC] rounded-lg text-xs font-sans text-[#2C1820] placeholder:text-[#9B8F84] transition-all outline-none shadow-2xs"
           />
 
           {searchQuery && (
@@ -44,7 +44,7 @@ export const SearchSortBar: React.FC<SearchSortBarProps> = ({
               type="button"
               onClick={() => onSearchChange('')}
               aria-label="Clear search"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-900 transition-colors min-w-[40px] justify-center"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#7A6E65] hover:text-[#2C1820] transition-colors min-w-[40px] justify-center"
             >
               <X className="w-4 h-4" aria-hidden="true" />
             </button>
@@ -55,9 +55,9 @@ export const SearchSortBar: React.FC<SearchSortBarProps> = ({
         <div className="flex items-center gap-2 shrink-0">
           <label
             htmlFor="catalogue-sort"
-            className="text-[11px] font-sans uppercase tracking-[0.15em] text-slate-500 hidden md:inline-flex items-center gap-1 select-none font-semibold"
+            className="text-[11px] font-sans uppercase tracking-[0.14em] text-[#7A6E65] inline-flex items-center gap-1 select-none font-semibold"
           >
-            <ArrowUpDown className="w-3 h-3 text-oxblood" aria-hidden="true" />
+            <ArrowUpDown className="w-3 h-3 text-[#68273D]" aria-hidden="true" />
             <span>Sort By:</span>
           </label>
           <div className="relative min-w-[170px] sm:min-w-[190px]">
@@ -66,14 +66,14 @@ export const SearchSortBar: React.FC<SearchSortBarProps> = ({
               value={sortBy}
               onChange={(e) => onSortChange(e.target.value as SortOption)}
               aria-label="Sort products by"
-              className="w-full min-h-[44px] px-3.5 py-2 bg-stone-50/60 hover:bg-stone-50 focus:bg-white border border-stone-200 hover:border-stone-300 focus:border-oxblood focus:ring-2 focus:ring-oxblood/10 rounded-xl text-xs font-sans tracking-wider uppercase text-slate-800 transition-all outline-none cursor-pointer appearance-none pr-8 shadow-2xs font-medium"
+              className="w-full min-h-[42px] px-3.5 py-2 bg-white hover:border-[#CFC4B5] focus:border-[#68273D] border border-[#E0D7CC] rounded-lg text-xs font-sans tracking-wider uppercase text-[#2C1820] transition-all outline-none cursor-pointer appearance-none pr-8 shadow-2xs font-medium"
             >
               <option value="featured">Featured Collection</option>
               <option value="price-asc">Price: Low to High</option>
               <option value="price-desc">Price: High to Low</option>
               <option value="newest">Newest First</option>
             </select>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-muted">
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#7A6E65]">
               <span className="text-[10px]">▼</span>
             </div>
           </div>
@@ -82,14 +82,14 @@ export const SearchSortBar: React.FC<SearchSortBarProps> = ({
 
       {/* Active Search & Result Count Bar */}
       {isFiltered && (
-        <div className="flex items-center justify-between text-[11px] font-sans text-muted px-0.5 pt-0.5">
+        <div className="flex items-center justify-between text-[11px] font-sans text-[#7A6E65] px-0.5 pt-0.5">
           <p>
-            Showing <span className="font-semibold text-ink">{resultCount}</span> of {totalCount} pieces for &ldquo;<span className="text-oxblood font-medium">{searchQuery.trim()}</span>&rdquo;
+            Showing <span className="font-semibold text-[#2C1820]">{resultCount}</span> of {totalCount} pieces for &ldquo;<span className="text-[#68273D] font-medium">{searchQuery.trim()}</span>&rdquo;
           </p>
           <button
             type="button"
             onClick={() => onSearchChange('')}
-            className="text-oxblood hover:text-ink underline underline-offset-2 transition-colors ml-2 font-medium"
+            className="text-[#68273D] hover:text-[#2C1820] underline underline-offset-2 transition-colors ml-2 font-medium"
           >
             Clear Search
           </button>

@@ -7,32 +7,41 @@ export default {
   theme: {
     extend: {
       colors: {
-        ivory: '#FFFFFF', // Modern crisp luminous pearl white
-        surface: '#F8FAFC',
-        ink: '#0F172A', // Deep obsidian charcoal
-        muted: '#64748B',
+        ivory: '#FBF8F2', // Warm, luxurious linen pearl canvas from Figma
+        surface: '#F7F0E7', // Soft champagne header background
+        ink: '#2C1820', // High-contrast charcoal with warm plum undertone
+        muted: '#7A6E65', // Refined warm taupe for SKU and secondary text
+        border: {
+          DEFAULT: '#E8DFD3',
+          light: '#F0EAE1',
+        },
+        plum: {
+          DEFAULT: '#42232D', // Deep royal wine for top announcement bar and footer
+          dark: '#361B24',
+          light: '#5A313E',
+        },
         oxblood: {
-          DEFAULT: '#881337', // Royal Garnet / Ruby
-          hover: '#700E2B',
-          light: '#9F1239',
+          DEFAULT: '#68273D', // Artisanal berry/plum for primary CTA buttons, tabs, price highlights
+          hover: '#541F31',
+          light: '#7E314B',
         },
         gold: {
-          DEFAULT: '#D97706', // Polished Champagne Gold
-          light: '#F59E0B',
-          dark: '#B45309',
+          DEFAULT: '#9B8469', // Elegant golden-bronze for tagline and warm accents
+          light: '#B39B7E',
+          dark: '#7D664E',
         },
-        dark: '#0F172A',
+        dark: '#42232B',
         primary: {
-          50: '#FFF1F2',
-          100: '#FFE4E6',
-          200: '#FECDD3',
-          300: '#FDA4AF',
-          400: '#FB7185',
-          500: '#F43F5E',
-          600: '#881337',
-          700: '#700E2B',
-          800: '#4C0519',
-          900: '#0F172A',
+          50: '#FBF8F2',
+          100: '#F7F0E7',
+          200: '#E8DFD3',
+          300: '#D5C4B4',
+          400: '#B39B7E',
+          500: '#9B8469',
+          600: '#68273D',
+          700: '#541F31',
+          800: '#42232D',
+          900: '#2C1820',
         },
       },
       fontFamily: {
@@ -43,4 +52,3 @@ export default {
   },
   plugins: [],
 };
-
