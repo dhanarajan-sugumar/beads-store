@@ -54,27 +54,27 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="max-w-[1200px] mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between min-h-[64px] sm:min-h-[76px] py-2 sm:py-2.5 gap-2 sm:gap-4">
+        <div className="flex items-center justify-between min-h-[72px] sm:min-h-[86px] md:min-h-[94px] py-2 sm:py-3 gap-2 sm:gap-4">
           {/* Brand Logo & Wordmark */}
           <Link
             to="/"
-            className="flex items-center gap-2 sm:gap-3.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-oxblood rounded-lg py-0.5 transition-opacity hover:opacity-95 min-w-0"
+            className="flex items-center gap-2.5 sm:gap-4 group focus:outline-none focus-visible:ring-2 focus-visible:ring-oxblood rounded-lg py-0.5 transition-opacity hover:opacity-95 min-w-0"
             aria-label={`${env.shopName} home page`}
           >
-            <div className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full overflow-hidden shrink-0 border border-[#E0D7CC] shadow-2xs bg-white flex items-center justify-center">
+            <div className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 md:w-[72px] md:h-[72px] shrink-0 flex items-center justify-center">
               <img
                 src="/logo.png"
-                alt="Madhis Handcrafts Logo"
-                className="w-full h-full object-contain"
+                alt={`${env.shopName} Crest`}
+                className="w-full h-full object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.06)] transition-transform duration-200 group-hover:scale-105"
               />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-serif font-medium text-[17px] xs:text-[19px] sm:text-[24px] md:text-[27px] tracking-tight sm:tracking-[0.01em] text-[#2C1820] leading-tight whitespace-nowrap">
+              <span className="font-serif font-semibold text-[20px] xs:text-[23px] sm:text-[30px] md:text-[36px] lg:text-[38px] tracking-tight text-[#2C1820] leading-none whitespace-nowrap">
                 {env.shopName}
               </span>
-              <span className="font-serif italic font-normal text-[10.5px] xs:text-[11.5px] sm:text-[13px] md:text-[14px] text-[#9B8469] tracking-wide leading-tight mt-0.5 truncate max-w-[180px] xs:max-w-[240px] sm:max-w-none">
+              <span className="font-serif italic font-normal text-[11px] xs:text-[12px] sm:text-[14px] md:text-[15px] text-[#9B8469] tracking-wide leading-tight mt-1 truncate max-w-[190px] xs:max-w-[270px] sm:max-w-none">
                 <span className="whitespace-nowrap">Each piece, made by hand.</span>
-                <span className="hidden sm:inline mx-0.5 text-[#9B8469]/70">•</span>
+                <span className="hidden sm:inline mx-1 text-[#9B8469]/70">•</span>
                 <span className="hidden sm:inline whitespace-nowrap">Handmade bead jewellery</span>
               </span>
             </div>
