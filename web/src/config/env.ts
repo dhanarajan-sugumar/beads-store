@@ -14,7 +14,7 @@ interface EnvConfig {
 function getEnvConfig(): EnvConfig {
   const rawUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
   const rawKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
-  const shopName = import.meta.env.VITE_SHOP_NAME?.trim() || 'Madhis Handcrafts';
+  const shopName = import.meta.env.VITE_SHOP_NAME?.trim() || "Madhi's Handcrafts";
   const rawWhatsapp = import.meta.env.VITE_WHATSAPP_NUMBER?.trim() || '+91 99447 17970';
   const rawInstagram = import.meta.env.VITE_INSTAGRAM_URL?.trim() || null;
 
@@ -48,7 +48,7 @@ try {
   env = {
     supabaseUrl: '',
     supabasePublishableKey: '',
-    shopName: 'Madhis Handcrafts',
+    shopName: "Madhi's Handcrafts",
     whatsappNumber: '+91 99447 17970',
     instagramUrl: null,
   };
