@@ -29,9 +29,9 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   return (
     <nav
       aria-label="Product categories"
-      className="sticky top-16 sm:top-20 z-20 bg-white/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-stone-200 mb-4 sm:mb-6 transition-all"
+      className="sticky top-16 sm:top-20 z-20 bg-[#FBF8F2]/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b border-[#E8DFD3] mb-4 sm:mb-6 transition-all"
     >
-      <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto pb-px no-scrollbar sm:justify-center">
+      <div className="flex items-center gap-6 sm:gap-10 overflow-x-auto pb-px no-scrollbar justify-center">
         {categories.map((cat) => {
           const isSelected = selectedCategory === cat.id;
           return (
@@ -42,19 +42,23 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
               aria-pressed={isSelected}
               className={`min-h-[44px] py-3 px-1 relative text-[11px] sm:text-xs font-sans tracking-[0.16em] uppercase transition-colors whitespace-nowrap flex items-center gap-1.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-oxblood ${
                 isSelected
-                  ? 'text-slate-900 font-bold'
-                  : 'text-slate-500 hover:text-slate-900 font-medium'
+                  ? 'text-[#68273D] font-bold'
+                  : 'text-[#7A6E65] hover:text-[#2C1820] font-medium'
               }`}
             >
               <span>{cat.label}</span>
-              <span className={`text-[10px] sm:text-[11px] tracking-normal font-sans ${isSelected ? 'text-oxblood font-semibold' : 'text-slate-400'}`}>
+              <span
+                className={`text-[10px] sm:text-[11px] tracking-normal font-sans ${
+                  isSelected ? 'text-[#68273D] font-bold' : 'text-[#7A6E65]'
+                }`}
+              >
                 ({cat.count})
               </span>
 
-              {/* Bold active underline */}
+              {/* Bold active underline in #68273D */}
               {isSelected && (
                 <span
-                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-oxblood"
+                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#68273D]"
                   aria-hidden="true"
                 />
               )}
@@ -65,4 +69,3 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
     </nav>
   );
 };
-
