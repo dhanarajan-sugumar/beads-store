@@ -1,0 +1,29 @@
+GEMINI IMAGE-EDITING PROMPT
+
+I am uploading an original jewellery product photograph. Edit this exact photograph for an online jewellery store.
+
+TASK
+Change ONLY the background to pure white (#FFFFFF). Keep the original product photograph intact.
+
+STRICT PRESERVATION RULES
+- Do not regenerate, redraw, replace, beautify, or reinterpret the necklace.
+- Preserve every original bead, its colour, shape, position, spacing, shine, and count.
+- Preserve the pendant, deity details, gold-tone parts, stones, chains, and dangling beads exactly.
+- Preserve the white display bust exactly, including its shape, edges, texture, lighting, and position.
+- Do not change the camera angle, product proportions, sharpness, or framing.
+- Do not add props, text, logos, shadows, reflections, or decorative elements.
+- Do not crop off any part of the necklace or display bust.
+- Do not turn the white display bust transparent or erase its edges.
+- Replace the lavender/grey background and tabletop with clean, uniform pure white (#FFFFFF).
+- Keep natural, subtle contact shadows only if needed to make the bust look realistic, but the background itself must be white.
+- Make the edge around the white bust clean and natural, with no halos, purple fringe, jagged edges, or visible cut-out artefacts.
+
+OUTPUT
+Return one edited image at the original aspect ratio and resolution if possible. Do not create a new interpretation of the product.
+
+QUALITY CHECK BEFORE FINISHING
+Compare the edited image with the uploaded original. If any jewellery detail or the bust has changed, undo that change and correct only the background. Product accuracy is more important than creative enhancement.
+
+After the background edit, I will use a separate Python script to export:
+1. Marketplace: 2000 x 2000 px, 1:1 square, JPEG, pure white canvas.
+2. Madhi's Handcrafts storefront: 1080 x 1350 px, 4:5 portrait, optimized WebP.

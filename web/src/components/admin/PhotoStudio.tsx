@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   UploadCloud,
-  Wand2,
   Download,
   RotateCcw,
   CheckCircle2,
@@ -12,56 +11,105 @@ import {
   AlertTriangle,
   Layers,
   Image as ImageIcon,
+  Copy,
+  Check,
+  ExternalLink,
+  Wand2,
 } from 'lucide-react';
 import { removeBackground } from '@imgly/background-removal';
 import {
   calculateFittedDimensions,
-  detectAlphaBoundingBox,
   getSanitizedBaseFilename,
   EXPORT_PRESETS,
   STUDIO_BACKGROUNDS,
-  type BoundingBox,
 } from '@/utils/photoStudio';
 
+const GEMINI_PROMPT_TEXT = `GEMINI IMAGE-EDITING PROMPT
+
+I am uploading an original jewellery product photograph. Edit this exact photograph for an online jewellery store.
+
+TASK
+Change ONLY the background to pure white (#FFFFFF). Keep the original product photograph intact.
+
+STRICT PRESERVATION RULES
+- Do not regenerate, redraw, replace, beautify, or reinterpret the necklace.
+- Preserve every original bead, its colour, shape, position, spacing, shine, and count.
+- Preserve the pendant, deity details, gold-tone parts, stones, chains, and dangling beads exactly.
+- Preserve the white display bust exactly, including its shape, edges, texture, lighting, and position.
+- Do not change the camera angle, product proportions, sharpness, or framing.
+- Do not add props, text, logos, shadows, reflections, or decorative elements.
+- Do not crop off any part of the necklace or display bust.
+- Do not turn the white display bust transparent or erase its edges.
+- Replace the lavender/grey background and tabletop with clean, uniform pure white (#FFFFFF).
+- Keep natural, subtle contact shadows only if needed to make the bust look realistic, but the background itself must be white.
+- Make the edge around the white bust clean and natural, with no halos, purple fringe, jagged edges, or visible cut-out artefacts.
+
+OUTPUT
+Return one edited image at the original aspect ratio and resolution if possible. Do not create a new interpretation of the product.
+
+QUALITY CHECK BEFORE FINISHING
+Compare the edited image with the uploaded original. If any jewellery detail or the bust has changed, undo that change and correct only the background. Product accuracy is more important than creative enhancement.
+
+After the background edit, I will use a separate exporter to produce:
+1. Marketplace: 2000 x 2000 px, 1:1 square, JPEG, pure white canvas.
+2. Madhi's Handcrafts storefront: 1080 x 1350 px, 4:5 portrait, optimized WebP.`;
+
 export const PhotoStudio: React.FC = () => {
-  // Upload and Image states
+  // Image and File states
   const [rawFile, setRawFile] = useState<File | null>(null);
-  const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
-  const [cutoutImgElement, setCutoutImgElement] = useState<HTMLImageElement | null>(null);
-  const [tightBounds, setTightBounds] = useState<BoundingBox | null>(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [currentImgElement, setCurrentImgElement] = useState<HTMLImageElement | null>(null);
+  const [isAiCutout, setIsAiCutout] = useState(false);
 
-  // Processing state
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [progressStage, setProgressStage] = useState<string>('');
-  const [progressPercent, setProgressPercent] = useState<number>(0);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Background removal state (optional on-demand)
+  const [isRemovingBg, setIsRemovingBg] = useState(false);
+  const [bgProgressStage, setBgProgressStage] = useState('');
+  const [bgProgressPercent, setBgProgressPercent] = useState(0);
 
-  // Compositor & Adjustment Controls
+  // Compositor Controls
   const [fillRatioPercent, setFillRatioPercent] = useState<number>(85); // 85% Amazon standard
   const [selectedBgId, setSelectedBgId] = useState<string>('white');
   const [previewAspect, setPreviewAspect] = useState<'square' | 'portrait'>('square');
   const [isExporting, setIsExporting] = useState<string | null>(null);
   const [exportSuccessNotice, setExportSuccessNotice] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Drag and Drop state
+  // Gemini prompt copy state
+  const [copiedPrompt, setCopiedPrompt] = useState(false);
+  const [showPromptDetails, setShowPromptDetails] = useState(false);
+
+  // Drag and drop state
   const [isDragging, setIsDragging] = useState(false);
 
-  // Preview Canvas reference
+  // Preview canvas
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Clean up Object URLs to prevent memory leaks
+  // Clean up Object URLs on unmount
   useEffect(() => {
     return () => {
-      if (originalImageUrl) {
-        URL.revokeObjectURL(originalImageUrl);
+      if (currentImageUrl) {
+        URL.revokeObjectURL(currentImageUrl);
       }
     };
-  }, [originalImageUrl]);
+  }, [currentImageUrl]);
+
+  const copyGeminiPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(GEMINI_PROMPT_TEXT);
+      setCopiedPrompt(true);
+      setTimeout(() => setCopiedPrompt(false), 3000);
+    } catch {
+      // Fallback
+      setCopiedPrompt(true);
+      setTimeout(() => setCopiedPrompt(false), 3000);
+    }
+  };
 
   /**
-   * Reads raw uploaded file, extracts pixel bounding box, and calls background removal
+   * Loads an uploaded image directly without automatic destructive segmentation.
+   * Perfect for Gemini-edited photos, white-background shots, or raw product photos.
    */
-  const processImageFile = useCallback(async (file: File) => {
+  const handleLoadImage = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) {
       setErrorMessage('Please select a valid image file (JPG, PNG, or WebP).');
       return;
@@ -70,88 +118,33 @@ export const PhotoStudio: React.FC = () => {
     setRawFile(file);
     setErrorMessage(null);
     setExportSuccessNotice(null);
-    setCutoutImgElement(null);
-    setTightBounds(null);
+    setIsAiCutout(false);
 
-    // Create preview URL for original
-    if (originalImageUrl) {
-      URL.revokeObjectURL(originalImageUrl);
+    if (currentImageUrl) {
+      URL.revokeObjectURL(currentImageUrl);
     }
-    const origUrl = URL.createObjectURL(file);
-    setOriginalImageUrl(origUrl);
 
-    setIsProcessing(true);
-    setProgressPercent(10);
-    setProgressStage('Initializing neural network & detecting jewellery edges...');
+    const objUrl = URL.createObjectURL(file);
+    setCurrentImageUrl(objUrl);
 
-    try {
-      const resultBlob = await removeBackground(file, {
-        progress: (key: string, current: number, total: number) => {
-          if (total > 0) {
-            const pct = Math.round((current / total) * 100);
-            setProgressPercent(pct);
-            if (key.includes('fetch') || key.includes('download')) {
-              setProgressStage(`Downloading AI model weights (${pct}%)...`);
-            } else {
-              setProgressStage(`Removing background & isolating jewellery (${pct}%)...`);
-            }
-          } else {
-            setProgressStage(`Processing image (${key})...`);
-          }
-        },
-      });
-
-      // Load transparent cutout image into HTMLImageElement to read tight alpha bounds
-      const cutoutUrl = URL.createObjectURL(resultBlob);
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        // Create an offscreen canvas to scan alpha bounding box
-        const offscreen = document.createElement('canvas');
-        offscreen.width = img.naturalWidth;
-        offscreen.height = img.naturalHeight;
-        const ctx = offscreen.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0);
-          try {
-            const imgData = ctx.getImageData(0, 0, offscreen.width, offscreen.height);
-            const bounds = detectAlphaBoundingBox(imgData.data, offscreen.width, offscreen.height);
-            setTightBounds(bounds);
-          } catch {
-            // Fallback to natural dimensions if getImageData is restricted
-            setTightBounds({
-              minX: 0,
-              minY: 0,
-              width: img.naturalWidth,
-              height: img.naturalHeight,
-            });
-          }
-        }
-        setCutoutImgElement(img);
-        setIsProcessing(false);
-      };
-      img.onerror = () => {
-        setIsProcessing(false);
-        setErrorMessage('Failed to decode the isolated jewellery cutout.');
-      };
-      img.src = cutoutUrl;
-    } catch (err) {
-      setIsProcessing(false);
-      const msg =
-        err instanceof Error
-          ? err.message
-          : 'Background removal failed. Please check browser WebAssembly/WebGL permissions.';
-      setErrorMessage(msg);
-    }
-  }, [originalImageUrl]);
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      setCurrentImgElement(img);
+    };
+    img.onerror = () => {
+      setErrorMessage('Failed to decode the selected image file.');
+    };
+    img.src = objUrl;
+  }, [currentImageUrl]);
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processImageFile(e.dataTransfer.files[0]);
+      handleLoadImage(e.dataTransfer.files[0]);
     }
-  }, [processImageFile]);
+  }, [handleLoadImage]);
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -165,21 +158,61 @@ export const PhotoStudio: React.FC = () => {
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      processImageFile(e.target.files[0]);
+      handleLoadImage(e.target.files[0]);
     }
   };
 
   /**
-   * Redraw the live preview canvas whenever controls change
+   * Optional On-Demand Auto Background Eraser
+   */
+  const handleAutoBackgroundRemoval = async () => {
+    if (!rawFile) return;
+
+    setIsRemovingBg(true);
+    setBgProgressPercent(10);
+    setBgProgressStage('Detecting jewellery edges...');
+    setErrorMessage(null);
+
+    try {
+      const resultBlob = await removeBackground(rawFile, {
+        progress: (key: string, current: number, total: number) => {
+          if (total > 0) {
+            const pct = Math.round((current / total) * 100);
+            setBgProgressPercent(pct);
+            setBgProgressStage(`Isolating jewellery (${pct}%)...`);
+          } else {
+            setBgProgressStage(`Processing (${key})...`);
+          }
+        },
+      });
+
+      const cutoutUrl = URL.createObjectURL(resultBlob);
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        setCurrentImgElement(img);
+        setCurrentImageUrl(cutoutUrl);
+        setIsAiCutout(true);
+        setIsRemovingBg(false);
+      };
+      img.src = cutoutUrl;
+    } catch (err) {
+      setIsRemovingBg(false);
+      const msg = err instanceof Error ? err.message : 'Background removal failed.';
+      setErrorMessage(msg);
+    }
+  };
+
+  /**
+   * Redraw the live preview canvas
    */
   const renderPreview = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !cutoutImgElement) return;
+    if (!canvas || !currentImgElement) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Determine target canvas dimensions
     const isSquare = previewAspect === 'square';
     const targetWidth = isSquare ? 1000 : 800;
     const targetHeight = isSquare ? 1000 : 1000;
@@ -196,63 +229,54 @@ export const PhotoStudio: React.FC = () => {
       ctx.clearRect(0, 0, targetWidth, targetHeight);
     }
 
-    // 2. Compute tight cropped bounds
-    const bounds = tightBounds || {
-      minX: 0,
-      minY: 0,
-      width: cutoutImgElement.naturalWidth,
-      height: cutoutImgElement.naturalHeight,
-    };
-
-    // 3. Compute optimal scaling and centering
+    // 2. Compute placement to fit complete image on canvas without cropping
     const fillRatio = fillRatioPercent / 100;
     const placement = calculateFittedDimensions(
-      bounds.width,
-      bounds.height,
+      currentImgElement.naturalWidth,
+      currentImgElement.naturalHeight,
       targetWidth,
       targetHeight,
       fillRatio
     );
 
-    // 4. Draw sliced foreground piece directly into centered target rect
+    // 3. Draw image with high quality smoothing
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(
-      cutoutImgElement,
-      bounds.minX,
-      bounds.minY,
-      bounds.width,
-      bounds.height,
+      currentImgElement,
+      0,
+      0,
+      currentImgElement.naturalWidth,
+      currentImgElement.naturalHeight,
       placement.renderX,
       placement.renderY,
       placement.renderWidth,
       placement.renderHeight
     );
-  }, [cutoutImgElement, tightBounds, fillRatioPercent, selectedBgId, previewAspect]);
+  }, [currentImgElement, fillRatioPercent, selectedBgId, previewAspect]);
 
   useEffect(() => {
     renderPreview();
   }, [renderPreview]);
 
   /**
-   * Generates a high-res export file (e.g. 2000x2000 JPEG or 1080x1350 WebP)
+   * Export high-resolution files (2000x2000 JPEG or 1080x1350 WebP)
    */
   const exportPresetImage = async (presetType: 'marketplace' | 'storefront') => {
-    if (!cutoutImgElement) return;
+    if (!currentImgElement) return;
 
     const preset = EXPORT_PRESETS[presetType];
     setIsExporting(preset.id);
     setExportSuccessNotice(null);
 
     try {
-      // Offscreen canvas at target high resolution
       const exportCanvas = document.createElement('canvas');
       exportCanvas.width = preset.width;
       exportCanvas.height = preset.height;
       const ctx = exportCanvas.getContext('2d');
-      if (!ctx) throw new Error('Could not initialize export canvas context.');
+      if (!ctx) throw new Error('Could not initialize canvas context.');
 
-      // Background selection: Marketplace requires pure white #FFFFFF
+      // Background selection
       const bgHex =
         presetType === 'marketplace'
           ? '#FFFFFF'
@@ -265,19 +289,11 @@ export const PhotoStudio: React.FC = () => {
         ctx.clearRect(0, 0, preset.width, preset.height);
       }
 
-      // Compute bounds
-      const bounds = tightBounds || {
-        minX: 0,
-        minY: 0,
-        width: cutoutImgElement.naturalWidth,
-        height: cutoutImgElement.naturalHeight,
-      };
-
-      // Calculate placement at prescribed resolution
+      // Compute placement
       const fillRatio = fillRatioPercent / 100;
       const placement = calculateFittedDimensions(
-        bounds.width,
-        bounds.height,
+        currentImgElement.naturalWidth,
+        currentImgElement.naturalHeight,
         preset.width,
         preset.height,
         fillRatio
@@ -286,18 +302,17 @@ export const PhotoStudio: React.FC = () => {
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(
-        cutoutImgElement,
-        bounds.minX,
-        bounds.minY,
-        bounds.width,
-        bounds.height,
+        currentImgElement,
+        0,
+        0,
+        currentImgElement.naturalWidth,
+        currentImgElement.naturalHeight,
         placement.renderX,
         placement.renderY,
         placement.renderWidth,
         placement.renderHeight
       );
 
-      // Convert to blob
       exportCanvas.toBlob(
         (blob) => {
           if (!blob) {
@@ -332,13 +347,13 @@ export const PhotoStudio: React.FC = () => {
   };
 
   const handleReset = () => {
-    if (originalImageUrl) {
-      URL.revokeObjectURL(originalImageUrl);
+    if (currentImageUrl) {
+      URL.revokeObjectURL(currentImageUrl);
     }
     setRawFile(null);
-    setOriginalImageUrl(null);
-    setCutoutImgElement(null);
-    setTightBounds(null);
+    setCurrentImageUrl(null);
+    setCurrentImgElement(null);
+    setIsAiCutout(false);
     setErrorMessage(null);
     setExportSuccessNotice(null);
     setFillRatioPercent(85);
@@ -347,22 +362,25 @@ export const PhotoStudio: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
+      {/* Top Banner: Workflow Overview */}
       <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-xs border border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200">
               <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              AI Photo Studio
+              Jewellery Photo Workflow
             </span>
             <span className="text-xs text-gray-400">•</span>
-            <span className="text-xs text-gray-500 font-medium">100% In-Browser & Private</span>
+            <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              Zero Quality Loss
+            </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-serif font-bold text-gray-900 mt-1">
-            Marketplace Photo Studio & Background Isolator
+            Marketplace Photo Studio & Resizer
           </h2>
-          <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
-            Auto-remove backgrounds, center necklaces and bracelets, and export standard Amazon, Flipkart, Meesho, and Madhis storefront photos.
+          <p className="text-xs sm:text-sm text-gray-600 mt-0.5 max-w-2xl">
+            Export 1:1 Amazon/Flipkart (2000×2000 JPEG) and 4:5 Madhis Storefront (1080×1350 WebP) photos with pure white canvas and guaranteed 80–85% frame fill.
           </p>
         </div>
 
@@ -378,11 +396,102 @@ export const PhotoStudio: React.FC = () => {
         )}
       </div>
 
+      {/* GEMINI BACKGROUND WORKFLOW ASSISTANT CARD */}
+      <div className="bg-gradient-to-br from-[#FAF5EC] to-[#F5ECE0] border border-[#E0D7CC] rounded-2xl p-5 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#42232D] text-white flex items-center justify-center shrink-0 shadow-2xs">
+              <Sparkles className="w-5 h-5 text-amber-300" />
+            </div>
+            <div>
+              <h3 className="font-serif font-bold text-base text-[#2C1820]">
+                Recommended 2-Step Jewellery Workflow
+              </h3>
+              <p className="text-xs text-[#7A6248]">
+                Preserve every delicate bead, deity pendant, and white display bust without automated AI cut-out artifacts.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={copyGeminiPrompt}
+              className="px-3.5 py-2 rounded-xl bg-white hover:bg-stone-50 border border-[#E0D7CC] text-[#2C1820] text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95"
+            >
+              {copiedPrompt ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-600" />
+                  <span className="text-emerald-700 font-bold">Copied Prompt!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4 text-[#7A6248]" />
+                  <span>Copy Gemini Prompt</span>
+                </>
+              )}
+            </button>
+
+            <a
+              href="https://gemini.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3.5 py-2 rounded-xl bg-[#42232D] hover:bg-[#5A303E] text-white text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all"
+            >
+              <span>Open Gemini</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        </div>
+
+        {/* 3 Step Visual Guide */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 text-xs">
+          <div className="bg-white/80 backdrop-blur-xs p-3 rounded-xl border border-[#E0D7CC]/80">
+            <span className="font-bold text-[#42232D] block mb-1">1. Paste Prompt into Gemini</span>
+            <p className="text-stone-600 text-[11px] leading-relaxed">
+              Upload your raw camera photo to Gemini with the copied prompt. Gemini edits ONLY the background to #FFFFFF without touching beads or bust.
+            </p>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-xs p-3 rounded-xl border border-[#E0D7CC]/80">
+            <span className="font-bold text-[#42232D] block mb-1">2. Drop Edited Photo Here</span>
+            <p className="text-stone-600 text-[11px] leading-relaxed">
+              Upload the saved pure-white photo below. The studio preserves 100% of the image resolution and color accuracy.
+            </p>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-xs p-3 rounded-xl border border-[#E0D7CC]/80">
+            <span className="font-bold text-[#42232D] block mb-1">3. 1-Click Multi-Channel Export</span>
+            <p className="text-stone-600 text-[11px] leading-relaxed">
+              Instantly download 2000×2000 JPEG for Amazon/Flipkart/Meesho and 1080×1350 WebP for Madhis Handcrafts.
+            </p>
+          </div>
+        </div>
+
+        {/* Collapsible Prompt Preview */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowPromptDetails(!showPromptDetails)}
+            className="text-[11px] font-semibold text-[#68273D] hover:underline flex items-center gap-1"
+          >
+            <span>{showPromptDetails ? 'Hide prompt text' : 'View strict preservation prompt text'}</span>
+            <span className="text-[9px]">▼</span>
+          </button>
+
+          {showPromptDetails && (
+            <div className="mt-2 p-3 bg-white rounded-xl border border-stone-200 text-[11px] font-mono text-stone-700 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
+              {GEMINI_PROMPT_TEXT}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Error Notice */}
       {errorMessage && (
         <div
           role="alert"
-          className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-900 text-sm flex items-start gap-3 animate-in fade-in"
+          className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-900 text-sm flex items-start gap-3"
         >
           <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           <div className="flex-1">
@@ -439,10 +548,10 @@ export const PhotoStudio: React.FC = () => {
 
             <div>
               <h3 className="font-serif font-bold text-lg text-stone-900">
-                Upload Raw Jewellery Photo
+                Upload Photo for Marketplace Sizing & Export
               </h3>
               <p className="text-xs text-stone-500 mt-1">
-                Drag and drop your phone or camera shot, or click below. Supports JPG, PNG, WebP up to 25MB.
+                Drag and drop your Gemini-edited photo or original jewellery picture. Supports JPG, PNG, WebP up to 30MB.
               </p>
             </div>
 
@@ -452,7 +561,7 @@ export const PhotoStudio: React.FC = () => {
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#42232D] text-white hover:bg-[#5A303E] text-xs font-semibold cursor-pointer shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <ImageIcon className="w-4 h-4" />
-                <span>Select Jewellery Image</span>
+                <span>Select Photo</span>
               </label>
               <input
                 id="studio-file-upload"
@@ -466,65 +575,46 @@ export const PhotoStudio: React.FC = () => {
             {/* Quick Specs Callout */}
             <div className="pt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-left">
               <div className="p-2.5 rounded-lg bg-stone-50 border border-stone-200">
-                <p className="text-[10px] font-bold uppercase text-stone-500">Pure White Background</p>
-                <p className="text-xs text-stone-700 mt-0.5">RGB (255, 255, 255) for marketplace guidelines.</p>
+                <p className="text-[10px] font-bold uppercase text-stone-500">2000 × 2000 px</p>
+                <p className="text-xs text-stone-700 mt-0.5">Amazon, Flipkart & Meesho 1:1 Square standard.</p>
               </div>
               <div className="p-2.5 rounded-lg bg-stone-50 border border-stone-200">
-                <p className="text-[10px] font-bold uppercase text-stone-500">80–85% Frame Fill</p>
-                <p className="text-xs text-stone-700 mt-0.5">Accurate scaling without manual Photoshop cropping.</p>
+                <p className="text-[10px] font-bold uppercase text-stone-500">1080 × 1350 px</p>
+                <p className="text-xs text-stone-700 mt-0.5">Madhis Handcrafts 4:5 luxury portrait storefront.</p>
               </div>
               <div className="p-2.5 rounded-lg bg-stone-50 border border-stone-200">
-                <p className="text-[10px] font-bold uppercase text-stone-500">Zero Server Fees</p>
-                <p className="text-xs text-stone-700 mt-0.5">Runs on-device via WebAssembly/WebGPU.</p>
+                <p className="text-[10px] font-bold uppercase text-stone-500">Python CLI Included</p>
+                <p className="text-xs text-stone-700 mt-0.5">Also available via scripts/photo_studio CLI.</p>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* STEP 2: Processing Progress Spinner */}
-      {isProcessing && (
-        <div className="bg-white p-8 sm:p-12 rounded-2xl shadow-xs border border-gray-200 text-center space-y-5">
-          <div className="relative w-16 h-16 mx-auto flex items-center justify-center">
-            <div className="w-16 h-16 rounded-full border-4 border-amber-100 border-t-amber-600 animate-spin" />
-            <Wand2 className="w-6 h-6 text-amber-600 absolute" />
+      {/* Background Removal Spinner (if optional cutout requested) */}
+      {isRemovingBg && (
+        <div className="bg-white p-8 sm:p-12 rounded-2xl shadow-xs border border-gray-200 text-center space-y-4">
+          <div className="w-12 h-12 mx-auto rounded-full border-4 border-amber-200 border-t-amber-600 animate-spin" />
+          <h3 className="font-serif font-bold text-lg text-gray-900">
+            Running In-Browser Cutout...
+          </h3>
+          <p className="text-xs text-gray-600">{bgProgressStage}</p>
+          <div className="w-48 bg-stone-100 rounded-full h-1.5 mx-auto overflow-hidden">
+            <div className="bg-amber-600 h-full transition-all" style={{ width: `${bgProgressPercent}%` }} />
           </div>
-
-          <div className="space-y-1.5 max-w-md mx-auto">
-            <h3 className="font-serif font-bold text-lg text-gray-900">
-              Isolating Jewellery Piece...
-            </h3>
-            <p className="text-xs text-gray-600">
-              {progressStage || 'Detecting jewellery edges & removing background...'}
-            </p>
-          </div>
-
-          <div className="max-w-xs mx-auto space-y-1">
-            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-              <div
-                className="bg-amber-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${Math.max(15, progressPercent)}%` }}
-              />
-            </div>
-            <p className="text-[11px] text-gray-400 font-mono text-right">{progressPercent}%</p>
-          </div>
-
-          <p className="text-[11px] text-stone-400 max-w-sm mx-auto italic">
-            Note: On first run, the local ONNX segmentation model is downloaded and cached in your browser. Subsequent photos process much faster.
-          </p>
         </div>
       )}
 
-      {/* STEP 3: Studio Editor & Preview Workspace */}
-      {!isProcessing && cutoutImgElement && (
+      {/* STEP 2: Studio Workspace & Canvas Preview */}
+      {!isRemovingBg && currentImgElement && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Column: Side-by-side or Canvas Preview (7 cols) */}
+          {/* Left Column: Canvas Preview (7 cols) */}
           <div className="lg:col-span-7 space-y-4">
             <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-xs border border-gray-200 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-stone-600 flex items-center gap-1.5">
                   <Layers className="w-4 h-4 text-stone-500" />
-                  Live Compositor Preview
+                  Output Canvas Preview
                 </span>
 
                 {/* Aspect ratio preview switch */}
@@ -538,7 +628,7 @@ export const PhotoStudio: React.FC = () => {
                         : 'text-stone-600 hover:text-stone-900'
                     }`}
                   >
-                    1:1 Square (Amazon)
+                    1:1 Square (Marketplace)
                   </button>
                   <button
                     type="button"
@@ -549,14 +639,13 @@ export const PhotoStudio: React.FC = () => {
                         : 'text-stone-600 hover:text-stone-900'
                     }`}
                   >
-                    4:5 Portrait (Madhis)
+                    4:5 Portrait (Storefront)
                   </button>
                 </div>
               </div>
 
               {/* Canvas Container */}
-              <div className="relative rounded-xl border border-stone-200 overflow-hidden bg-stone-50 flex items-center justify-center p-2 min-h-[360px] sm:min-h-[460px]">
-                {/* Checkerboard transparency backdrop behind canvas */}
+              <div className="relative rounded-xl border border-stone-200 overflow-hidden bg-stone-50 flex items-center justify-center p-3 min-h-[360px] sm:min-h-[460px]">
                 <div
                   className="w-full max-w-[420px] aspect-square rounded-lg shadow-sm border border-stone-200 overflow-hidden flex items-center justify-center"
                   style={{
@@ -582,31 +671,27 @@ export const PhotoStudio: React.FC = () => {
                 </div>
               </div>
 
-              {/* Side-by-side Original vs Cutout compare toggle */}
-              {originalImageUrl && (
-                <details className="text-xs text-stone-600 group">
-                  <summary className="cursor-pointer font-semibold text-stone-700 hover:text-stone-900 select-none flex items-center gap-1.5 py-1">
-                    <span>View Original Raw Photo</span>
-                    <span className="text-[10px] text-stone-400 group-open:rotate-180 transition-transform">▼</span>
-                  </summary>
-                  <div className="mt-2.5 p-3 rounded-xl bg-stone-50 border border-stone-200 flex flex-col sm:flex-row items-center gap-4">
-                    <img
-                      src={originalImageUrl}
-                      alt="Original raw jewellery upload"
-                      className="w-32 h-32 object-cover rounded-lg border border-stone-300 shadow-2xs"
-                    />
-                    <div className="text-xs space-y-1">
-                      <p className="font-semibold text-stone-800">{rawFile?.name}</p>
-                      <p className="text-stone-500">
-                        {rawFile ? `${(rawFile.size / 1024).toFixed(1)} KB` : ''} • Detected tight bounds: {tightBounds?.width}×{tightBounds?.height}px
-                      </p>
-                      <p className="text-emerald-700 font-medium">
-                        ✓ Background eliminated & isolated via on-device AI.
-                      </p>
-                    </div>
-                  </div>
-                </details>
-              )}
+              {/* Photo details & optional Auto-Cutout button */}
+              <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-stone-600 border-t border-gray-100">
+                <div>
+                  <p className="font-semibold text-stone-800">{rawFile?.name}</p>
+                  <p className="text-[11px] text-stone-500">
+                    Source: {currentImgElement.naturalWidth} × {currentImgElement.naturalHeight}px
+                    {isAiCutout ? ' • AI Cutout Applied' : ' • 100% Original Preservation'}
+                  </p>
+                </div>
+
+                {!isAiCutout && (
+                  <button
+                    type="button"
+                    onClick={handleAutoBackgroundRemoval}
+                    className="self-start sm:self-auto px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    <Wand2 className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Auto-Remove Background (Experimental)</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -617,9 +702,9 @@ export const PhotoStudio: React.FC = () => {
               <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                 <h3 className="font-serif font-bold text-base text-gray-900 flex items-center gap-2">
                   <Sliders className="w-4 h-4 text-stone-600" />
-                  Framing & Background
+                  Framing & Canvas Sizing
                 </h3>
-                <span className="text-xs text-stone-400">Live Render</span>
+                <span className="text-xs text-stone-400">Live Fit</span>
               </div>
 
               {/* 1. Scale / Padding Slider */}
@@ -637,7 +722,7 @@ export const PhotoStudio: React.FC = () => {
                   id="fill-slider"
                   type="range"
                   min="70"
-                  max="95"
+                  max="98"
                   step="1"
                   value={fillRatioPercent}
                   onChange={(e) => setFillRatioPercent(Number(e.target.value))}
@@ -648,14 +733,14 @@ export const PhotoStudio: React.FC = () => {
                   <span>70% (Spacious)</span>
                   <span className="font-semibold text-emerald-700 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                    85% Amazon Standard
+                    85% Marketplace Fit
                   </span>
-                  <span>95% (Tight)</span>
+                  <span>98% (Edge-to-Edge)</span>
                 </div>
 
                 <p className="text-[11px] text-stone-500 leading-relaxed bg-stone-50 p-2.5 rounded-lg border border-stone-200 mt-2">
                   <Info className="w-3.5 h-3.5 text-stone-600 inline mr-1 -mt-0.5" />
-                  Amazon & Flipkart guidelines mandate that the primary product must occupy <strong>at least 80% to 85%</strong> of the total image frame.
+                  Fits the complete image onto the canvas using Lanczos high-res interpolation with zero cropping.
                 </p>
               </div>
 
