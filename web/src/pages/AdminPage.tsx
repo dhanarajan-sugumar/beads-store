@@ -11,6 +11,7 @@ import {
   Search,
   Package,
   ShoppingBag,
+  Wand2,
 } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { supabase } from '@/lib/supabase';
@@ -23,6 +24,10 @@ import { OrderListTable } from '@/components/admin/OrderListTable';
 import { OrderDetailModal } from '@/components/admin/OrderDetailModal';
 import { OrderKPIBadges } from '@/components/admin/OrderKPIBadges';
 
+const PhotoStudio = React.lazy(() =>
+  import('@/components/admin/PhotoStudio').then((m) => ({ default: m.PhotoStudio }))
+);
+
 export const AdminPage: React.FC = () => {
   const { user, isAdmin, loading: authLoading, authError, signIn, signOut } = useAdminAuth();
 
@@ -32,7 +37,7 @@ export const AdminPage: React.FC = () => {
   const [loggingIn, setLoggingIn] = useState(false);
 
   // Active Admin Section Tab
-  const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'studio'>('products');
 
   // Products state for admin
   const [products, setProducts] = useState<Product[]>([]);
@@ -368,7 +373,11 @@ export const AdminPage: React.FC = () => {
             <span className="text-xs text-gray-500">{user.email}</span>
           </div>
           <h1 className="text-2xl font-sans font-bold text-gray-900 mt-1">
-            {activeTab === 'products' ? 'Catalogue Management' : 'Orders Management'}
+            {activeTab === 'products'
+              ? 'Catalogue Management'
+              : activeTab === 'orders'
+              ? 'Orders Management'
+              : 'Marketplace Photo Studio'}
           </h1>
         </div>
 
@@ -391,12 +400,12 @@ export const AdminPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Navigation Tabs: Catalogue vs Orders */}
-      <div className="bg-white rounded-xl border border-gray-200 px-3 py-1.5 shadow-2xs flex items-center gap-2">
+      {/* Navigation Tabs: Catalogue vs Orders vs Photo Studio */}
+      <div className="bg-white rounded-xl border border-gray-200 px-3 py-1.5 shadow-2xs flex items-center gap-2 overflow-x-auto">
         <button
           type="button"
           onClick={() => setActiveTab('products')}
-          className={`min-h-[40px] px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
+          className={`min-h-[40px] px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
             activeTab === 'products'
               ? 'bg-slate-900 text-white shadow-2xs'
               : 'bg-stone-50 text-stone-700 hover:bg-stone-100 hover:text-slate-900'
@@ -416,7 +425,7 @@ export const AdminPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('orders')}
-          className={`min-h-[40px] px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
+          className={`min-h-[40px] px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
             activeTab === 'orders'
               ? 'bg-slate-900 text-white shadow-2xs'
               : 'bg-stone-50 text-stone-700 hover:bg-stone-100 hover:text-slate-900'
@@ -437,6 +446,26 @@ export const AdminPage: React.FC = () => {
               {orders.length}
             </span>
           )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('studio')}
+          className={`min-h-[40px] px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
+            activeTab === 'studio'
+              ? 'bg-slate-900 text-white shadow-2xs'
+              : 'bg-stone-50 text-stone-700 hover:bg-stone-100 hover:text-slate-900'
+          }`}
+        >
+          <Wand2 className={`w-4 h-4 ${activeTab === 'studio' ? 'text-amber-400' : 'text-stone-500'}`} />
+          <span className={activeTab === 'studio' ? 'text-white' : 'text-stone-800'}>Photo Studio</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+              activeTab === 'studio' ? 'bg-amber-400/20 text-amber-200' : 'bg-amber-100 text-amber-800'
+            }`}
+          >
+            AI
+          </span>
         </button>
       </div>
 
@@ -614,6 +643,20 @@ export const AdminPage: React.FC = () => {
             onStatusChange={handleUpdateOrderStatus}
           />
         </div>
+      )}
+
+      {/* TAB 3: Marketplace Photo Studio */}
+      {activeTab === 'studio' && (
+        <React.Suspense
+          fallback={
+            <div className="bg-white p-12 rounded-2xl shadow-xs border border-gray-200 text-center flex flex-col items-center justify-center space-y-3">
+              <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
+              <p className="text-sm font-semibold text-gray-700">Loading Photo Studio AI tools...</p>
+            </div>
+          }
+        >
+          <PhotoStudio />
+        </React.Suspense>
       )}
 
       {/* Add / Edit Form Modal */}
