@@ -1,46 +1,58 @@
 # Madhi's Handcrafts — Jewellery Image Processing Suite
 
-This directory contains Python tools and workflows designed specifically for Madhi's Handcrafts jewellery photography.
+This directory contains image processing tools and workflows tailored for Madhi's Handcrafts jewellery photography.
 
 ---
 
-## 🛠️ The Two Available Programs
+## 🌟 Program 1: `photoroom_jewellery_processor.py` (PhotoRoom Cloud AI)
 
-### Program 1: `jewellery_image_processor.py` (Automated Background Removal)
-Automates the full pipeline using `rembg` (U²-Net neural network) locally on your machine:
-1. Segments the jewellery from its background.
-2. Trims excess transparent margins while preserving padding.
-3. Composites the product onto pure white (`#FFFFFF`).
-4. Generates:
-   - `[name]-marketplace-square.jpg` (2000 × 2000, 1:1 Square, JPEG, 300 DPI, UnsharpMask)
-   - `[name]-storefront-4x5.webp` (1080 × 1350, 4:5 Portrait, WebP, quality 92)
+Integrates **PhotoRoom's Industry-Leading Background Removal API** with automated marketplace and storefront formatting.
 
-**How to run:**
+### 🧪 Important: Sandbox Mode (Save your 10 Paid Credits!)
+PhotoRoom offers **free unlimited sandbox testing** (with a watermark). Always test your setup with `--sandbox` first so you don't use up your 10 production credits!
+
+### Setup:
+1. Copy your API key from [PhotoRoom API Dashboard](https://app.photoroom.com/api-dashboard).
+2. Add it to your `.env` file (or pass `--api-key`):
+   ```bash
+   PHOTOROOM_API_KEY=your_actual_api_key_here
+   ```
+
+### Running with Sandbox Mode (FREE testing with watermark):
 ```bash
-# 1. Install dependencies (Pillow, rembg, onnxruntime are already installed on your Mac)
-pip install Pillow rembg onnxruntime
+python3 scripts/photo_studio/photoroom_jewellery_processor.py "path/to/raw-photo.jpg" --sandbox --outdir exports --name necklace-01
+```
 
-# 2. Run on any raw photo:
-python3 scripts/photo_studio/jewellery_image_processor.py "path/to/DSC_9992.JPG" --outdir exports --name DSC_9992
+### Running in Production Mode (Uses 1 of your 10 credits, NO watermark):
+```bash
+python3 scripts/photo_studio/photoroom_jewellery_processor.py "path/to/raw-photo.jpg" --outdir exports --name necklace-01
+```
+
+### Outputs Generated:
+1. `exports/necklace-01-marketplace-square.jpg` (2000 × 2000 px, 1:1 Square, JPEG, pure white `#FFFFFF`, 300 DPI)
+2. `exports/necklace-01-storefront-4x5.webp` (1080 × 1350 px, 4:5 Portrait, WebP, quality 92)
+3. `exports/necklace-01-transparent-cutout.png` (High-res transparent PNG cutout)
+
+---
+
+## 🛠️ Program 2: `jewellery_marketplace_export.py` (Gemini Preservation Workflow)
+For delicate white display busts or intricate deity pendants:
+1. Copy the strict prompt from `gemini_background_edit_prompt.txt` into [gemini.google.com](https://gemini.google.com).
+2. Save the pure white background-edited photo from Gemini.
+3. Run:
+```bash
+python3 scripts/photo_studio/jewellery_marketplace_export.py "path/to/gemini-edited.jpg" --outdir exports --name necklace-01
 ```
 
 ---
 
-### Program 2: `jewellery_marketplace_export.py` (Gemini High-Fidelity Workflow)
-For delicate items (e.g., white mannequin display busts on pale walls, intricate deity pendants, or micro-beads) where automated segmentation might erase edges:
-1. Open [gemini.google.com](https://gemini.google.com) or Google AI Studio.
-2. Upload the raw photo with the prompt from `gemini_background_edit_prompt.txt`.
-3. Save the pure white background-edited photo.
-4. Run the deterministic exporter:
+## ⚡ Program 3: `jewellery_image_processor.py` (Local Free `rembg` U²-Net)
+Runs 100% locally on your Mac using `rembg` (no API key or internet required):
 ```bash
-python3 scripts/photo_studio/jewellery_marketplace_export.py "path/to/gemini-edited.jpg" --outdir exports --name DSC_9992
+python3 scripts/photo_studio/jewellery_image_processor.py "path/to/raw-photo.jpg" --outdir exports --name necklace-01
 ```
 
 ---
 
-## 🌐 Web In-Browser Photo Studio (`/admin`)
-Both workflows are also built right into the **Photo Studio** tab of your store's protected `/admin` portal:
-- Live 1:1 Square and 4:5 Portrait canvas preview.
-- Frame fill slider (80%–85% Amazon compliance).
-- 1-click downloads for Amazon/Flipkart and Madhis Handcrafts.
-- 1-click "Copy Gemini Prompt" assistant.
+## 🌐 In-Browser Admin Studio (`/admin`)
+Also available in the **Photo Studio** tab of your protected Admin Portal with live canvas preview, interactive framing slider (80%–85% Amazon rule), and 1-click downloads.
