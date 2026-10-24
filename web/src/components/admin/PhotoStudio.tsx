@@ -11,12 +11,12 @@ import {
   AlertTriangle,
   Layers,
   Image as ImageIcon,
-  Copy,
-  Check,
-  ExternalLink,
-  Wand2,
+  Key,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  Flame,
 } from 'lucide-react';
-import { removeBackground } from '@imgly/background-removal';
 import {
   calculateFittedDimensions,
   getSanitizedBaseFilename,
@@ -24,59 +24,33 @@ import {
   STUDIO_BACKGROUNDS,
 } from '@/utils/photoStudio';
 
-const GEMINI_PROMPT_TEXT = `GEMINI IMAGE-EDITING PROMPT
-
-I am uploading an original jewellery product photograph. Edit this exact photograph for an online jewellery store.
-
-TASK
-Change ONLY the background to pure white (#FFFFFF). Keep the original product photograph intact.
-
-STRICT PRESERVATION RULES
-- Do not regenerate, redraw, replace, beautify, or reinterpret the necklace.
-- Preserve every original bead, its colour, shape, position, spacing, shine, and count.
-- Preserve the pendant, deity details, gold-tone parts, stones, chains, and dangling beads exactly.
-- Preserve the white display bust exactly, including its shape, edges, texture, lighting, and position.
-- Do not change the camera angle, product proportions, sharpness, or framing.
-- Do not add props, text, logos, shadows, reflections, or decorative elements.
-- Do not crop off any part of the necklace or display bust.
-- Do not turn the white display bust transparent or erase its edges.
-- Replace the lavender/grey background and tabletop with clean, uniform pure white (#FFFFFF).
-- Keep natural, subtle contact shadows only if needed to make the bust look realistic, but the background itself must be white.
-- Make the edge around the white bust clean and natural, with no halos, purple fringe, jagged edges, or visible cut-out artefacts.
-
-OUTPUT
-Return one edited image at the original aspect ratio and resolution if possible. Do not create a new interpretation of the product.
-
-QUALITY CHECK BEFORE FINISHING
-Compare the edited image with the uploaded original. If any jewellery detail or the bust has changed, undo that change and correct only the background. Product accuracy is more important than creative enhancement.
-
-After the background edit, I will use a separate exporter to produce:
-1. Marketplace: 2000 x 2000 px, 1:1 square, JPEG, pure white canvas.
-2. Madhi's Handcrafts storefront: 1080 x 1350 px, 4:5 portrait, optimized WebP.`;
+const LOCAL_STORAGE_KEY_NAME = 'photoroom_api_key';
 
 export const PhotoStudio: React.FC = () => {
+  // PhotoRoom API configuration state
+  const [apiKey, setApiKey] = useState<string>(() => {
+    return localStorage.getItem(LOCAL_STORAGE_KEY_NAME) || '';
+  });
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [isSandbox, setIsSandbox] = useState(true); // Default to Sandbox to protect the 10 credits!
+
   // Image and File states
   const [rawFile, setRawFile] = useState<File | null>(null);
-  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
-  const [currentImgElement, setCurrentImgElement] = useState<HTMLImageElement | null>(null);
-  const [isAiCutout, setIsAiCutout] = useState(false);
+  const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
+  const [cutoutImgElement, setCutoutImgElement] = useState<HTMLImageElement | null>(null);
+  const [cutoutBlob, setCutoutBlob] = useState<Blob | null>(null);
 
-  // Background removal state (optional on-demand)
-  const [isRemovingBg, setIsRemovingBg] = useState(false);
-  const [bgProgressStage, setBgProgressStage] = useState('');
-  const [bgProgressPercent, setBgProgressPercent] = useState(0);
+  // Processing state
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStage, setProcessingStage] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [exportSuccessNotice, setExportSuccessNotice] = useState<string | null>(null);
 
   // Compositor Controls
   const [fillRatioPercent, setFillRatioPercent] = useState<number>(85); // 85% Amazon standard
   const [selectedBgId, setSelectedBgId] = useState<string>('white');
   const [previewAspect, setPreviewAspect] = useState<'square' | 'portrait'>('square');
   const [isExporting, setIsExporting] = useState<string | null>(null);
-  const [exportSuccessNotice, setExportSuccessNotice] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  // Gemini prompt copy state
-  const [copiedPrompt, setCopiedPrompt] = useState(false);
-  const [showPromptDetails, setShowPromptDetails] = useState(false);
 
   // Drag and drop state
   const [isDragging, setIsDragging] = useState(false);
@@ -84,32 +58,29 @@ export const PhotoStudio: React.FC = () => {
   // Preview canvas
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Clean up Object URLs on unmount
-  useEffect(() => {
-    return () => {
-      if (currentImageUrl) {
-        URL.revokeObjectURL(currentImageUrl);
-      }
-    };
-  }, [currentImageUrl]);
-
-  const copyGeminiPrompt = async () => {
-    try {
-      await navigator.clipboard.writeText(GEMINI_PROMPT_TEXT);
-      setCopiedPrompt(true);
-      setTimeout(() => setCopiedPrompt(false), 3000);
-    } catch {
-      // Fallback
-      setCopiedPrompt(true);
-      setTimeout(() => setCopiedPrompt(false), 3000);
+  // Save API key to local storage when changed
+  const handleApiKeyChange = (val: string) => {
+    setApiKey(val);
+    if (val.trim()) {
+      localStorage.setItem(LOCAL_STORAGE_KEY_NAME, val.trim());
+    } else {
+      localStorage.removeItem(LOCAL_STORAGE_KEY_NAME);
     }
   };
 
+  // Clean up Object URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (originalImageUrl) {
+        URL.revokeObjectURL(originalImageUrl);
+      }
+    };
+  }, [originalImageUrl]);
+
   /**
-   * Loads an uploaded image directly without automatic destructive segmentation.
-   * Perfect for Gemini-edited photos, white-background shots, or raw product photos.
+   * Handles raw photo selection
    */
-  const handleLoadImage = useCallback((file: File) => {
+  const handleSelectFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) {
       setErrorMessage('Please select a valid image file (JPG, PNG, or WebP).');
       return;
@@ -118,33 +89,24 @@ export const PhotoStudio: React.FC = () => {
     setRawFile(file);
     setErrorMessage(null);
     setExportSuccessNotice(null);
-    setIsAiCutout(false);
+    setCutoutImgElement(null);
+    setCutoutBlob(null);
 
-    if (currentImageUrl) {
-      URL.revokeObjectURL(currentImageUrl);
+    if (originalImageUrl) {
+      URL.revokeObjectURL(originalImageUrl);
     }
 
     const objUrl = URL.createObjectURL(file);
-    setCurrentImageUrl(objUrl);
-
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      setCurrentImgElement(img);
-    };
-    img.onerror = () => {
-      setErrorMessage('Failed to decode the selected image file.');
-    };
-    img.src = objUrl;
-  }, [currentImageUrl]);
+    setOriginalImageUrl(objUrl);
+  }, [originalImageUrl]);
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleLoadImage(e.dataTransfer.files[0]);
+      handleSelectFile(e.dataTransfer.files[0]);
     }
-  }, [handleLoadImage]);
+  }, [handleSelectFile]);
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -158,47 +120,76 @@ export const PhotoStudio: React.FC = () => {
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      handleLoadImage(e.target.files[0]);
+      handleSelectFile(e.target.files[0]);
     }
   };
 
   /**
-   * Optional On-Demand Auto Background Eraser
+   * Calls the PhotoRoom backend proxy (/api/photoroom)
    */
-  const handleAutoBackgroundRemoval = async () => {
+  const handleRunPhotoRoom = async () => {
     if (!rawFile) return;
 
-    setIsRemovingBg(true);
-    setBgProgressPercent(10);
-    setBgProgressStage('Detecting jewellery edges...');
+    if (!apiKey.trim()) {
+      setErrorMessage('Please enter your PhotoRoom API key above before running.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setProcessingStage(
+      isSandbox
+        ? 'Sending to PhotoRoom API (Sandbox Mode — Free test)...'
+        : 'Sending to PhotoRoom API (Production Mode — Consuming 1 credit)...'
+    );
     setErrorMessage(null);
+    setExportSuccessNotice(null);
 
     try {
-      const resultBlob = await removeBackground(rawFile, {
-        progress: (key: string, current: number, total: number) => {
-          if (total > 0) {
-            const pct = Math.round((current / total) * 100);
-            setBgProgressPercent(pct);
-            setBgProgressStage(`Isolating jewellery (${pct}%)...`);
-          } else {
-            setBgProgressStage(`Processing (${key})...`);
-          }
+      const formData = new FormData();
+      formData.append('image_file', rawFile);
+      formData.append('sandbox', isSandbox ? 'true' : 'false');
+      formData.append('apiKey', apiKey.trim());
+
+      const res = await fetch('/api/photoroom', {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey.trim(),
         },
+        body: formData,
       });
 
-      const cutoutUrl = URL.createObjectURL(resultBlob);
+      if (!res.ok) {
+        let errMessage = 'Failed to process image with PhotoRoom.';
+        try {
+          const errJson = await res.json();
+          if (errJson.error) {
+            errMessage = errJson.error;
+          }
+        } catch {
+          const errText = await res.text();
+          if (errText) errMessage = errText;
+        }
+        throw new Error(errMessage);
+      }
+
+      const blob = await res.blob();
+      setCutoutBlob(blob);
+
+      const cutoutUrl = URL.createObjectURL(blob);
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
-        setCurrentImgElement(img);
-        setCurrentImageUrl(cutoutUrl);
-        setIsAiCutout(true);
-        setIsRemovingBg(false);
+        setCutoutImgElement(img);
+        setIsProcessing(false);
+      };
+      img.onerror = () => {
+        setIsProcessing(false);
+        setErrorMessage('Failed to decode the image returned from PhotoRoom.');
       };
       img.src = cutoutUrl;
     } catch (err) {
-      setIsRemovingBg(false);
-      const msg = err instanceof Error ? err.message : 'Background removal failed.';
+      setIsProcessing(false);
+      const msg = err instanceof Error ? err.message : 'PhotoRoom processing failed.';
       setErrorMessage(msg);
     }
   };
@@ -208,7 +199,7 @@ export const PhotoStudio: React.FC = () => {
    */
   const renderPreview = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !currentImgElement) return;
+    if (!canvas || !cutoutImgElement) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -232,8 +223,8 @@ export const PhotoStudio: React.FC = () => {
     // 2. Compute placement to fit complete image on canvas without cropping
     const fillRatio = fillRatioPercent / 100;
     const placement = calculateFittedDimensions(
-      currentImgElement.naturalWidth,
-      currentImgElement.naturalHeight,
+      cutoutImgElement.naturalWidth,
+      cutoutImgElement.naturalHeight,
       targetWidth,
       targetHeight,
       fillRatio
@@ -243,17 +234,17 @@ export const PhotoStudio: React.FC = () => {
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(
-      currentImgElement,
+      cutoutImgElement,
       0,
       0,
-      currentImgElement.naturalWidth,
-      currentImgElement.naturalHeight,
+      cutoutImgElement.naturalWidth,
+      cutoutImgElement.naturalHeight,
       placement.renderX,
       placement.renderY,
       placement.renderWidth,
       placement.renderHeight
     );
-  }, [currentImgElement, fillRatioPercent, selectedBgId, previewAspect]);
+  }, [cutoutImgElement, fillRatioPercent, selectedBgId, previewAspect]);
 
   useEffect(() => {
     renderPreview();
@@ -263,7 +254,7 @@ export const PhotoStudio: React.FC = () => {
    * Export high-resolution files (2000x2000 JPEG or 1080x1350 WebP)
    */
   const exportPresetImage = async (presetType: 'marketplace' | 'storefront') => {
-    if (!currentImgElement) return;
+    if (!cutoutImgElement) return;
 
     const preset = EXPORT_PRESETS[presetType];
     setIsExporting(preset.id);
@@ -292,8 +283,8 @@ export const PhotoStudio: React.FC = () => {
       // Compute placement
       const fillRatio = fillRatioPercent / 100;
       const placement = calculateFittedDimensions(
-        currentImgElement.naturalWidth,
-        currentImgElement.naturalHeight,
+        cutoutImgElement.naturalWidth,
+        cutoutImgElement.naturalHeight,
         preset.width,
         preset.height,
         fillRatio
@@ -302,11 +293,11 @@ export const PhotoStudio: React.FC = () => {
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(
-        currentImgElement,
+        cutoutImgElement,
         0,
         0,
-        currentImgElement.naturalWidth,
-        currentImgElement.naturalHeight,
+        cutoutImgElement.naturalWidth,
+        cutoutImgElement.naturalHeight,
         placement.renderX,
         placement.renderY,
         placement.renderWidth,
@@ -346,14 +337,32 @@ export const PhotoStudio: React.FC = () => {
     }
   };
 
+  /**
+   * 1-Click Download of raw transparent cutout PNG
+   */
+  const downloadTransparentCutout = () => {
+    if (!cutoutBlob) return;
+    const baseName = getSanitizedBaseFilename(rawFile?.name || 'jewellery-piece');
+    const filename = `${baseName}-photoroom-cutout.png`;
+    const url = URL.createObjectURL(cutoutBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setExportSuccessNotice(`Downloaded ${filename} (Transparent PNG)!`);
+  };
+
   const handleReset = () => {
-    if (currentImageUrl) {
-      URL.revokeObjectURL(currentImageUrl);
+    if (originalImageUrl) {
+      URL.revokeObjectURL(originalImageUrl);
     }
     setRawFile(null);
-    setCurrentImageUrl(null);
-    setCurrentImgElement(null);
-    setIsAiCutout(false);
+    setOriginalImageUrl(null);
+    setCutoutImgElement(null);
+    setCutoutBlob(null);
     setErrorMessage(null);
     setExportSuccessNotice(null);
     setFillRatioPercent(85);
@@ -362,25 +371,25 @@ export const PhotoStudio: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner: Workflow Overview */}
+      {/* Top Banner */}
       <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-xs border border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              Jewellery Photo Workflow
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-50 text-purple-900 border border-purple-200">
+              <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+              PhotoRoom API Cloud Studio
             </span>
             <span className="text-xs text-gray-400">•</span>
             <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              Zero Quality Loss
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              Commercial E-Commerce Quality
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-serif font-bold text-gray-900 mt-1">
-            Marketplace Photo Studio & Resizer
+            Jewellery Background Isolator & Marketplace Exporter
           </h2>
           <p className="text-xs sm:text-sm text-gray-600 mt-0.5 max-w-2xl">
-            Export 1:1 Amazon/Flipkart (2000×2000 JPEG) and 4:5 Madhis Storefront (1080×1350 WebP) photos with pure white canvas and guaranteed 80–85% frame fill.
+            Cleanly isolates necklaces, bracelets, and display busts via PhotoRoom API, then formats them for Amazon, Flipkart, Meesho, and Madhis Handcrafts.
           </p>
         </div>
 
@@ -396,95 +405,72 @@ export const PhotoStudio: React.FC = () => {
         )}
       </div>
 
-      {/* GEMINI BACKGROUND WORKFLOW ASSISTANT CARD */}
-      <div className="bg-gradient-to-br from-[#FAF5EC] to-[#F5ECE0] border border-[#E0D7CC] rounded-2xl p-5 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-start sm:items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#42232D] text-white flex items-center justify-center shrink-0 shadow-2xs">
-              <Sparkles className="w-5 h-5 text-amber-300" />
-            </div>
-            <div>
-              <h3 className="font-serif font-bold text-base text-[#2C1820]">
-                Recommended 2-Step Jewellery Workflow
-              </h3>
-              <p className="text-xs text-[#7A6248]">
-                Preserve every delicate bead, deity pendant, and white display bust without automated AI cut-out artifacts.
-              </p>
-            </div>
+      {/* PHOTOROOM API KEY & SANDBOX CONTROLS */}
+      <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-xs border border-gray-200 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+          <div className="flex items-center gap-2">
+            <Key className="w-4 h-4 text-purple-600" />
+            <h3 className="font-semibold text-sm text-gray-900">
+              PhotoRoom API Configuration
+            </h3>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Sandbox Toggle */}
+          <label className="inline-flex items-center gap-2.5 cursor-pointer select-none bg-stone-50 px-3 py-1.5 rounded-xl border border-stone-200">
+            <input
+              type="checkbox"
+              checked={isSandbox}
+              onChange={(e) => setIsSandbox(e.target.checked)}
+              className="w-4 h-4 accent-purple-600 rounded cursor-pointer"
+            />
+            <span className="text-xs font-semibold text-stone-800 flex items-center gap-1.5">
+              <span>Sandbox Mode (Free Testing • Watermarked)</span>
+              {isSandbox ? (
+                <span className="text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                  0 Credits Consumed
+                </span>
+              ) : (
+                <span className="text-[10px] font-bold uppercase bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <Flame className="w-3 h-3 text-amber-600" />
+                  Consumes 1 Credit
+                </span>
+              )}
+            </span>
+          </label>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="relative flex-1">
+            <input
+              type={showApiKey ? 'text' : 'password'}
+              value={apiKey}
+              onChange={(e) => handleApiKeyChange(e.target.value)}
+              placeholder="Paste your PhotoRoom API key (e.g. 5a1b...)"
+              className="w-full min-h-[42px] pl-3.5 pr-10 py-2 rounded-xl border border-gray-300 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 text-xs font-mono outline-none transition-colors"
+            />
             <button
               type="button"
-              onClick={copyGeminiPrompt}
-              className="px-3.5 py-2 rounded-xl bg-white hover:bg-stone-50 border border-[#E0D7CC] text-[#2C1820] text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95"
+              onClick={() => setShowApiKey(!showApiKey)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              aria-label={showApiKey ? 'Hide API key' : 'Show API key'}
             >
-              {copiedPrompt ? (
-                <>
-                  <Check className="w-4 h-4 text-emerald-600" />
-                  <span className="text-emerald-700 font-bold">Copied Prompt!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4 text-[#7A6248]" />
-                  <span>Copy Gemini Prompt</span>
-                </>
-              )}
+              {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
-
-            <a
-              href="https://gemini.google.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3.5 py-2 rounded-xl bg-[#42232D] hover:bg-[#5A303E] text-white text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all"
-            >
-              <span>Open Gemini</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-          </div>
-        </div>
-
-        {/* 3 Step Visual Guide */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 text-xs">
-          <div className="bg-white/80 backdrop-blur-xs p-3 rounded-xl border border-[#E0D7CC]/80">
-            <span className="font-bold text-[#42232D] block mb-1">1. Paste Prompt into Gemini</span>
-            <p className="text-stone-600 text-[11px] leading-relaxed">
-              Upload your raw camera photo to Gemini with the copied prompt. Gemini edits ONLY the background to #FFFFFF without touching beads or bust.
-            </p>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-xs p-3 rounded-xl border border-[#E0D7CC]/80">
-            <span className="font-bold text-[#42232D] block mb-1">2. Drop Edited Photo Here</span>
-            <p className="text-stone-600 text-[11px] leading-relaxed">
-              Upload the saved pure-white photo below. The studio preserves 100% of the image resolution and color accuracy.
-            </p>
-          </div>
-
-          <div className="bg-white/80 backdrop-blur-xs p-3 rounded-xl border border-[#E0D7CC]/80">
-            <span className="font-bold text-[#42232D] block mb-1">3. 1-Click Multi-Channel Export</span>
-            <p className="text-stone-600 text-[11px] leading-relaxed">
-              Instantly download 2000×2000 JPEG for Amazon/Flipkart/Meesho and 1080×1350 WebP for Madhis Handcrafts.
-            </p>
-          </div>
-        </div>
-
-        {/* Collapsible Prompt Preview */}
-        <div>
-          <button
-            type="button"
-            onClick={() => setShowPromptDetails(!showPromptDetails)}
-            className="text-[11px] font-semibold text-[#68273D] hover:underline flex items-center gap-1"
+          <a
+            href="https://app.photoroom.com/api-dashboard"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3.5 py-2.5 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 text-xs font-semibold text-center transition-colors shrink-0"
           >
-            <span>{showPromptDetails ? 'Hide prompt text' : 'View strict preservation prompt text'}</span>
-            <span className="text-[9px]">▼</span>
-          </button>
-
-          {showPromptDetails && (
-            <div className="mt-2 p-3 bg-white rounded-xl border border-stone-200 text-[11px] font-mono text-stone-700 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
-              {GEMINI_PROMPT_TEXT}
-            </div>
-          )}
+            Get Key from PhotoRoom Dashboard ↗
+          </a>
         </div>
+
+        <p className="text-[11px] text-stone-500">
+          🔒 Your API key is stored safely in your browser session and sent directly to PhotoRoom over encrypted SSL. Keep <strong>Sandbox Mode</strong> checked while testing to protect your 10 production credits!
+        </p>
       </div>
 
       {/* Error Notice */}
@@ -516,7 +502,7 @@ export const PhotoStudio: React.FC = () => {
         >
           <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="font-semibold text-xs uppercase tracking-wide">Ready for Upload</p>
+            <p className="font-semibold text-xs uppercase tracking-wide">Export Complete</p>
             <p className="text-xs text-emerald-700 mt-0.5">{exportSuccessNotice}</p>
           </div>
           <button
@@ -537,7 +523,7 @@ export const PhotoStudio: React.FC = () => {
           onDragLeave={handleDragLeave}
           className={`border-2 border-dashed rounded-2xl p-8 sm:p-14 text-center transition-all bg-white shadow-xs ${
             isDragging
-              ? 'border-primary-600 bg-primary-50/40 ring-4 ring-primary-100'
+              ? 'border-purple-600 bg-purple-50/40 ring-4 ring-purple-100'
               : 'border-stone-300 hover:border-stone-400'
           }`}
         >
@@ -548,10 +534,10 @@ export const PhotoStudio: React.FC = () => {
 
             <div>
               <h3 className="font-serif font-bold text-lg text-stone-900">
-                Upload Photo for Marketplace Sizing & Export
+                Upload Raw Jewellery Photo
               </h3>
               <p className="text-xs text-stone-500 mt-1">
-                Drag and drop your Gemini-edited photo or original jewellery picture. Supports JPG, PNG, WebP up to 30MB.
+                Drag and drop your necklace or bracelet photo, or click below. Supports JPG, PNG, WebP up to 30MB.
               </p>
             </div>
 
@@ -561,7 +547,7 @@ export const PhotoStudio: React.FC = () => {
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#42232D] text-white hover:bg-[#5A303E] text-xs font-semibold cursor-pointer shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <ImageIcon className="w-4 h-4" />
-                <span>Select Photo</span>
+                <span>Select Jewellery Photo</span>
               </label>
               <input
                 id="studio-file-upload"
@@ -575,38 +561,88 @@ export const PhotoStudio: React.FC = () => {
             {/* Quick Specs Callout */}
             <div className="pt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-left">
               <div className="p-2.5 rounded-lg bg-stone-50 border border-stone-200">
-                <p className="text-[10px] font-bold uppercase text-stone-500">2000 × 2000 px</p>
-                <p className="text-xs text-stone-700 mt-0.5">Amazon, Flipkart & Meesho 1:1 Square standard.</p>
+                <p className="text-[10px] font-bold uppercase text-stone-500">PhotoRoom Cloud AI</p>
+                <p className="text-xs text-stone-700 mt-0.5">High-fidelity edge detection for jewellery.</p>
               </div>
               <div className="p-2.5 rounded-lg bg-stone-50 border border-stone-200">
-                <p className="text-[10px] font-bold uppercase text-stone-500">1080 × 1350 px</p>
-                <p className="text-xs text-stone-700 mt-0.5">Madhis Handcrafts 4:5 luxury portrait storefront.</p>
+                <p className="text-[10px] font-bold uppercase text-stone-500">Free Sandbox Mode</p>
+                <p className="text-xs text-stone-700 mt-0.5">Test 1000s of images free with watermark.</p>
               </div>
               <div className="p-2.5 rounded-lg bg-stone-50 border border-stone-200">
-                <p className="text-[10px] font-bold uppercase text-stone-500">Python CLI Included</p>
-                <p className="text-xs text-stone-700 mt-0.5">Also available via scripts/photo_studio CLI.</p>
+                <p className="text-[10px] font-bold uppercase text-stone-500">Marketplace Ready</p>
+                <p className="text-xs text-stone-700 mt-0.5">2000×2000 Amazon JPEG + 1080×1350 Madhis WebP.</p>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Background Removal Spinner (if optional cutout requested) */}
-      {isRemovingBg && (
-        <div className="bg-white p-8 sm:p-12 rounded-2xl shadow-xs border border-gray-200 text-center space-y-4">
-          <div className="w-12 h-12 mx-auto rounded-full border-4 border-amber-200 border-t-amber-600 animate-spin" />
-          <h3 className="font-serif font-bold text-lg text-gray-900">
-            Running In-Browser Cutout...
-          </h3>
-          <p className="text-xs text-gray-600">{bgProgressStage}</p>
-          <div className="w-48 bg-stone-100 rounded-full h-1.5 mx-auto overflow-hidden">
-            <div className="bg-amber-600 h-full transition-all" style={{ width: `${bgProgressPercent}%` }} />
+      {/* STEP 2: Raw Photo Preview & Trigger PhotoRoom Button (if uploaded but not yet segmented) */}
+      {rawFile && !cutoutImgElement && !isProcessing && (
+        <div className="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 space-y-6">
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="w-48 h-48 rounded-xl overflow-hidden border border-stone-200 bg-stone-50 shrink-0 flex items-center justify-center shadow-xs">
+              {originalImageUrl && (
+                <img
+                  src={originalImageUrl}
+                  alt="Raw uploaded jewellery"
+                  className="w-full h-full object-contain"
+                />
+              )}
+            </div>
+
+            <div className="space-y-3 flex-1 text-center sm:text-left">
+              <div>
+                <h3 className="font-serif font-bold text-lg text-gray-900">{rawFile.name}</h3>
+                <p className="text-xs text-stone-500 mt-0.5">
+                  {(rawFile.size / 1024).toFixed(1)} KB • Ready for PhotoRoom background removal
+                </p>
+              </div>
+
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-700 space-y-1">
+                <p className="font-semibold text-stone-800">
+                  Mode:{' '}
+                  {isSandbox ? (
+                    <span className="text-emerald-700 font-bold">
+                      Sandbox (FREE test • Will contain PhotoRoom watermark • 0 credits consumed)
+                    </span>
+                  ) : (
+                    <span className="text-amber-800 font-bold">
+                      Production (Watermark-free • Consumes 1 of your 10 credits)
+                    </span>
+                  )}
+                </p>
+                <p className="text-[11px] text-stone-500">
+                  You can change this anytime using the Sandbox checkbox in the configuration panel above.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleRunPhotoRoom}
+                className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-[1.01] active:scale-[0.99]"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Process with PhotoRoom API Now</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* STEP 2: Studio Workspace & Canvas Preview */}
-      {!isRemovingBg && currentImgElement && (
+      {/* STEP 3: Processing Spinner */}
+      {isProcessing && (
+        <div className="bg-white p-12 rounded-2xl shadow-xs border border-gray-200 text-center space-y-4">
+          <div className="w-12 h-12 mx-auto rounded-full border-4 border-purple-200 border-t-purple-600 animate-spin" />
+          <h3 className="font-serif font-bold text-lg text-gray-900">
+            PhotoRoom Cloud AI is isolating your jewellery...
+          </h3>
+          <p className="text-xs text-gray-600 max-w-md mx-auto">{processingStage}</p>
+        </div>
+      )}
+
+      {/* STEP 4: Live Canvas Compositor & 1-Click Exports */}
+      {!isProcessing && cutoutImgElement && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Canvas Preview (7 cols) */}
           <div className="lg:col-span-7 space-y-4">
@@ -614,7 +650,7 @@ export const PhotoStudio: React.FC = () => {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-stone-600 flex items-center gap-1.5">
                   <Layers className="w-4 h-4 text-stone-500" />
-                  Output Canvas Preview
+                  Live Output Preview
                 </span>
 
                 {/* Aspect ratio preview switch */}
@@ -628,7 +664,7 @@ export const PhotoStudio: React.FC = () => {
                         : 'text-stone-600 hover:text-stone-900'
                     }`}
                   >
-                    1:1 Square (Marketplace)
+                    1:1 Square (Marketplaces)
                   </button>
                   <button
                     type="button"
@@ -671,26 +707,24 @@ export const PhotoStudio: React.FC = () => {
                 </div>
               </div>
 
-              {/* Photo details & optional Auto-Cutout button */}
+              {/* Photo details */}
               <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-stone-600 border-t border-gray-100">
                 <div>
                   <p className="font-semibold text-stone-800">{rawFile?.name}</p>
                   <p className="text-[11px] text-stone-500">
-                    Source: {currentImgElement.naturalWidth} × {currentImgElement.naturalHeight}px
-                    {isAiCutout ? ' • AI Cutout Applied' : ' • 100% Original Preservation'}
+                    Isolated Cutout: {cutoutImgElement.naturalWidth} × {cutoutImgElement.naturalHeight}px
+                    {isSandbox ? ' • Sandbox (Watermarked)' : ' • Production (Watermark-free)'}
                   </p>
                 </div>
 
-                {!isAiCutout && (
-                  <button
-                    type="button"
-                    onClick={handleAutoBackgroundRemoval}
-                    className="self-start sm:self-auto px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                  >
-                    <Wand2 className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Auto-Remove Background (Experimental)</span>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={downloadTransparentCutout}
+                  className="text-xs font-semibold text-purple-700 hover:text-purple-900 underline flex items-center gap-1"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Transparent PNG</span>
+                </button>
               </div>
             </div>
           </div>
@@ -713,7 +747,7 @@ export const PhotoStudio: React.FC = () => {
                   <label htmlFor="fill-slider" className="text-xs font-bold uppercase tracking-wider text-gray-700">
                     Subject Scale (Frame Fill)
                   </label>
-                  <span className="text-xs font-mono font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                  <span className="text-xs font-mono font-bold text-purple-900 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
                     {fillRatioPercent}%
                   </span>
                 </div>
@@ -726,7 +760,7 @@ export const PhotoStudio: React.FC = () => {
                   step="1"
                   value={fillRatioPercent}
                   onChange={(e) => setFillRatioPercent(Number(e.target.value))}
-                  className="w-full accent-[#42232D] cursor-pointer"
+                  className="w-full accent-purple-600 cursor-pointer"
                 />
 
                 <div className="flex items-center justify-between text-[11px] text-gray-500">
@@ -740,7 +774,7 @@ export const PhotoStudio: React.FC = () => {
 
                 <p className="text-[11px] text-stone-500 leading-relaxed bg-stone-50 p-2.5 rounded-lg border border-stone-200 mt-2">
                   <Info className="w-3.5 h-3.5 text-stone-600 inline mr-1 -mt-0.5" />
-                  Fits the complete image onto the canvas using Lanczos high-res interpolation with zero cropping.
+                  Scales and centers the jewellery on the canvas with zero cropping, complying with Amazon & Flipkart's 80–85% frame rule.
                 </p>
               </div>
 
@@ -760,7 +794,7 @@ export const PhotoStudio: React.FC = () => {
                         onClick={() => setSelectedBgId(bg.id)}
                         className={`p-2.5 rounded-xl border text-left transition-all relative flex flex-col justify-between min-h-[64px] ${
                           isSelected
-                            ? 'border-amber-600 ring-2 ring-amber-500/20 bg-amber-50/20'
+                            ? 'border-purple-600 ring-2 ring-purple-500/20 bg-purple-50/20'
                             : 'border-stone-200 hover:border-stone-300 bg-white'
                         }`}
                       >
